@@ -6,21 +6,34 @@ from dash.dependencies import Input, Output
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
-years = ['2019-2020']
+years = ['2015-2016']
 all_options = {
-    'Team': ['Warriors'],
-    'Player': ['Stephen Curry']
+    'Team': ['Warriors', 'Cavaliers'],
+    'Player': ['Stephen Curry', 'Klay Thompson', 'Draymond Green', 'Kyrie Irving', 'Kevin Love','LeBron James']
 }
 
 ppg_data = {
-    'Stephen Curry': 29.8,
+    'Stephen Curry': 30.1,
+    'Klay Thompson': 22.1,
+    'Draymond Green': 14,
+    'Kyrie Irving': 19.6,
+    'Kevin Love': 16.0,
+    'LeBron James': 25.3,
+    'Cavaliers': 12.7,
     'Warriors': 13.4,
     'NBA': 9.7
 }
 
 player_team_map = {
     'Stephen Curry': 'Warriors',
-    'Warriors': 'NBA'
+    'Klay Thompson': 'Warriors',
+    'Draymond Green': 'Warriors',
+    'Kevin Love': 'Cavaliers',
+    'LeBron James': 'Cavaliers',
+    'Kyrie Irving': 'Cavaliers',
+    'Warriors': 'NBA',
+    'Cavaliers': 'NBA',
+
 }
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
@@ -32,7 +45,7 @@ app.layout = html.Div(children=[
             dcc.Dropdown(
                 id='years-dropdown',
                 options=[{'label': i, 'value': i} for i in years],
-                value='2019-2020',
+                value='2015-2016',
                 placeholder='Select a Year'
             )
     ]
@@ -93,28 +106,13 @@ def set_people_value(available_options):
     [Input('groups-dropdown','value'),
      Input('people-dropdown','value')])
 def update_ppg_figure(group_selected, player_team_selected):
-    
-    if(group_selected == 'Team'):
-        x1_data = player_team_selected  # Team Name
-        y1_data = ppg_data[player_team_selected] # Team Avg PPG
-        x2_data = player_team_map[player_team_selected]  # NBA Name
-        y2_data =  ppg_data[player_team_map[player_team_selected]]  # NBA Avg PPG
-        name1 =  player_team_selected  # Team Name
-        name2 =  player_team_map[player_team_selected]  # NBA Name
-    else: # group_selected == 'Player
-        x1_data =  player_team_selected  # Player Name
-        y1_data =  ppg_data[player_team_selected]# Player Avg PPG
-        x2_data =  player_team_map[player_team_selected]# Team Name
-        y2_data =  ppg_data[player_team_map[player_team_selected]]# Team Avg PPG
-        name1 =  player_team_selected# Player Name
-        name2 =  player_team_map[player_team_selected]# Team Name
     return{
             'data': [
-                {'x': [x1_data], 'y': [y1_data], 'type': 'bar', 'name': name1},
-                {'x': [x2_data], 'y': [y2_data], 'type': 'bar', 'name': name2},
+                {'x': [player_team_selected], 'y': [ppg_data[player_team_selected]], 'type': 'bar', 'name': player_team_selected},
+                {'x': [player_team_map[player_team_selected]], 'y': [ppg_data[player_team_map[player_team_selected]]], 'type': 'bar', 'name': player_team_map[player_team_selected]},
             ],
             'layout': {
-                'title': 'Points Per Game Data Visualization'
+                'title': 'Average Points Per Game Data Visualization'
             }
         }
 
