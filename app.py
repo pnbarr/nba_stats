@@ -6,8 +6,9 @@ from dash.dependencies import Input, Output
 from nba_api.stats.static import players, teams
 from nba_api.stats.endpoints import commonallplayers, leaguegamefinder, commonplayerinfo, playercareerstats, teamyearbyyearstats
 from nba_api.stats.library.parameters import Season
-
-
+import plotly.graph_objects as go
+import plotly.express as px 
+import pandas as pd 
 
 # ==================================== SandBox Area ==================================================== #
 nba_teams = teams.get_teams()  # nba_teams is a list of dictionaries
@@ -102,16 +103,11 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         team_yby_df = team_yby_data.get_data_frames()[0]
         selected_year_data = team_yby_df.loc[team_yby_df['YEAR'] == selected_year]
         filtered_team_yby_df = selected_year_data[['GP','WINS','LOSSES','CONF_RANK']]
-        return{
-                'data': [
-                    {'x': ['GP','WINS','LOSSES','CONF_RANK'], 'y': [filtered_team_yby_df.iloc[0]['GP'],filtered_team_yby_df.iloc[0]['WINS'],
-                                                                    filtered_team_yby_df.iloc[0]['LOSSES'],filtered_team_yby_df.iloc[0]['CONF_RANK']],
-                                                                     'type': 'bar', 'name': player_team_selected},
-                ],
-                'layout': {
-                    'title': 'Team Performance Statistics 2018-19'
-                }
-            }
+        labels = ['WINS','LOSSES']
+        values = [filtered_team_yby_df.iloc[0]['WINS'], filtered_team_yby_df.iloc[0]['LOSSES']]
+        fig = go.Figure(data=[go.Pie(labels=labels, values=values)])
+        return fig
+
     else:  # Put player logic here
         player_info = [player for player in nba_players
                      if player['full_name'] == player_team_selected][0]
