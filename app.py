@@ -48,7 +48,9 @@ group_options = ['Team', 'Player']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.layout = html.Div(children=[
-    html.H1(children='Welcome to NBA Stats'),
+    html.H1(children='Welcome to NBA Stats', style={
+        'textAlign':'center'
+    }),
     
     # html.Div([
     #         dcc.Dropdown(
@@ -72,9 +74,11 @@ app.layout = html.Div(children=[
 
     html.Div(children='''
         NBA Stats : A web applications for viewing NBA Statistics
-    '''),
+    ''', style={
+        'textAlign':'center'
+    }),
 
-    dcc.Graph(id='stats-graph')
+    html.Div(id='tabs-content')
 ])
 
 #  Callback updates options for people-dropdown based on group selected
@@ -95,7 +99,7 @@ def set_people_options(group):
 
 #  Callback updates graph based on player/team selected
 @app.callback(
-    Output('stats-graph','figure'),
+    Output('tabs-content','children'),
     [Input('tabs-group','value'),
      Input('people-dropdown','value')])
 def update_statsgraph_figure(group_selected, player_team_selected):
@@ -111,7 +115,9 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         labels = ['WINS','LOSSES']
         values = [filtered_team_yby_df.iloc[0]['WINS'], filtered_team_yby_df.iloc[0]['LOSSES']]
         fig = go.Figure(data=[go.Pie(labels=labels, values=values)])
-        return fig
+        colors=['cyan','orange']
+        fig.update_traces(marker=dict(colors=colors))
+        return dcc.Graph(figure=fig)
 
     else:  # Put player logic here
         player_info = [player for player in nba_players
@@ -124,17 +130,12 @@ def update_statsgraph_figure(group_selected, player_team_selected):
                                                        #         played for more than one team in a given
                                                        #         season, need to normalize w/ respect to GP 
         filtered_player_df = selected_year_data[['REB','AST','STL','BLK','TOV','PTS']]
-        return{
-                'data': [
-                    {'x': ['REB','AST','STL','BLK','TOV','PTS'], 'y': [filtered_player_df.loc['REB'],filtered_player_df.loc['AST'],
-                                                                       filtered_player_df.loc['STL'],filtered_player_df.loc['BLK'],
-                                                                       filtered_player_df.loc['TOV'],filtered_player_df.loc['PTS']],
-                                                                        'type': 'bar', 'name': player_team_selected},
-                ],
-                'layout': {
-                    'title': 'Player Performance Statistics'
-                }
-            }
+        x = ['REB','AST','STL','BLK','TOV','PTS']
+        y = [filtered_player_df.loc['REB'],filtered_player_df.loc['AST'],
+             filtered_player_df.loc['STL'],filtered_player_df.loc['BLK'],
+             filtered_player_df.loc['TOV'],filtered_player_df.loc['PTS']]
+        fig = go.Figure(data=[go.Bar(x=x,y=y,name=player_team_selected)])
+        return dcc.Graph(figure=fig)
 
 
 #  Callback updates value for people-dropdown based on player/team selected
