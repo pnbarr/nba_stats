@@ -50,15 +50,20 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 app.layout = html.Div(children=[
     html.H1(children='Welcome to NBA Stats'),
     
-    html.Div([
-            dcc.Dropdown(
-                id='groups-dropdown',
-                options=[{'label': i, 'value': i} for i in group_options],
-                value='Team',
-                placeholder='Select a Group'
-            )
-    ]
-    ),
+    # html.Div([
+    #         dcc.Dropdown(
+    #             id='groups-dropdown',
+    #             options=[{'label': i, 'value': i} for i in group_options],
+    #             value='Team',
+    #             placeholder='Select a Group'
+    #         )
+    # ]
+    # ),
+
+    dcc.Tabs(id='tabs-group', value='Team', children=[
+        dcc.Tab(label='Team Statistics', value='Team'),
+        dcc.Tab(label='Player Statistics', value='Player'),
+    ]),
 
         html.Div([
             dcc.Dropdown(id='people-dropdown'),
@@ -75,7 +80,7 @@ app.layout = html.Div(children=[
 #  Callback updates options for people-dropdown based on group selected
 @app.callback(
     Output('people-dropdown', 'options'),
-    [Input('groups-dropdown', 'value')])
+    [Input('tabs-group', 'value')])
 def set_people_options(group):
     if group == 'Team':
         nba_team_list =[]
@@ -91,7 +96,7 @@ def set_people_options(group):
 #  Callback updates graph based on player/team selected
 @app.callback(
     Output('stats-graph','figure'),
-    [Input('groups-dropdown','value'),
+    [Input('tabs-group','value'),
      Input('people-dropdown','value')])
 def update_statsgraph_figure(group_selected, player_team_selected):
     selected_year = '2018-19'  # TODO : Make this a slider input
