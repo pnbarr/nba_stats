@@ -41,6 +41,49 @@ player_example = playercareerstats.PlayerCareerStats(player_id=nba_players[0]['i
 player_example_df = player_example.get_data_frames()[0]
 
 # ======================================================================================================= #
+
+def build_tabs():
+    return html.Div(
+        id="tabs",
+        className="tabs",
+        children=[
+            dcc.Tabs(
+                id='tabs-group',
+                value="Team",
+                className="custom-tabs",
+                children=[
+                    dcc.Tab(
+                        id="Team-tab",
+                        label="Team Statistics",
+                        value="Team",
+                        className="custom-tab",
+                        selected_className="custom-tab--selected",
+                    ),
+                    dcc.Tab(
+                        id="Player-tab",
+                        label="Player Statistics",
+                        value="Player",
+                        className="custom-tab",
+                        selected_className="custom-tab--selected",
+                    ),
+                ],
+            )
+        ],
+    )
+
+def build_team_tab():
+    return [
+        html.Div([
+        dcc.Dropdown(id='people-dropdown'),
+    ]
+    ),
+    ]
+
+def build_player_tab():
+    return
+
+
+# ======================================================================================================= #
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 group_options = ['Team', 'Player']
@@ -51,24 +94,18 @@ app.layout = html.Div(children=[
     html.H1(children='Welcome to NBA Stats', style={
         'textAlign':'center'
     }),
-    
-    # html.Div([
-    #         dcc.Dropdown(
-    #             id='groups-dropdown',
-    #             options=[{'label': i, 'value': i} for i in group_options],
-    #             value='Team',
-    #             placeholder='Select a Group'
-    #         )
-    # ]
-    # ),
 
-    dcc.Tabs(id='tabs-group', value='Team', children=[
-        dcc.Tab(label='Team Statistics', value='Team'),
-        dcc.Tab(label='Player Statistics', value='Player'),
-    ]),
+    html.Div(
+            id="app-container",
+            children=[
+                build_tabs(),
+                # Main app
+                html.Div(id="app-content"),
+            ],
+        ),
 
-        html.Div([
-            dcc.Dropdown(id='people-dropdown'),
+    html.Div([
+        dcc.Dropdown(id='people-dropdown'),
     ]
     ),
 
@@ -111,13 +148,33 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         team_yby_data = teamyearbyyearstats.TeamYearByYearStats(team_id=team_id)
         team_yby_df = team_yby_data.get_data_frames()[0]
         selected_year_data = team_yby_df.loc[team_yby_df['YEAR'] == selected_year]
-        filtered_team_yby_df = selected_year_data[['GP','WINS','LOSSES','CONF_RANK']]
-        labels = ['WINS','LOSSES']
-        values = [filtered_team_yby_df.iloc[0]['WINS'], filtered_team_yby_df.iloc[0]['LOSSES']]
-        fig = go.Figure(data=[go.Pie(labels=labels, values=values)])
+        data_columns = ['WINS','LOSSES','CONF_RANK','REB','AST','STL','TOV','BLK','PTS']
+        filtered_team_yby_df = selected_year_data[data_columns]
+        #  Pie chart for display record data
+        record_pie_labels = ['WINS','LOSSES']
+        record_pie_values = [filtered_team_yby_df.iloc[0]['WINS'], filtered_team_yby_df.iloc[0]['LOSSES']]
+        record_pie = go.Figure(data=[go.Pie(labels=record_pie_labels, values=record_pie_values)])
         colors=['cyan','orange']
-        fig.update_traces(marker=dict(colors=colors))
-        return dcc.Graph(figure=fig)
+        record_pie.update_traces(marker=dict(colors=colors))
+        #  Bar graph for displaying basic data 
+        basic_bar_labels = ['REB','AST','STL','TOV','BLK','PTS']
+        basic_bar_values = [filtered_team_yby_df.iloc[0]['REB'], filtered_team_yby_df.iloc[0]['AST'],
+                             filtered_team_yby_df.iloc[0]['STL'], filtered_team_yby_df.iloc[0]['TOV'],
+                             filtered_team_yby_df.iloc[0]['BLK'], filtered_team_yby_df.iloc[0]['PTS']]
+        basic_bar = go.Figure(data=[go.Bar(x=basic_bar_labels, y=basic_bar_values)])
+        return [
+            html.Div([
+                dcc.Graph(figure=record_pie),
+            ]
+            ),
+            html.Div(children='''
+                                Standard Team Data
+                               ''',
+                     style={
+                         'textAlign': 'center'
+                     }),
+            dcc.Graph(figure=basic_bar)
+        ]
 
     else:  # Put player logic here
         player_info = [player for player in nba_players
