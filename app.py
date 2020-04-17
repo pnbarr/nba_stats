@@ -186,13 +186,31 @@ def update_statsgraph_figure(group_selected, player_team_selected):
                                                        #  TODO : Include logic to average player's stats if 
                                                        #         played for more than one team in a given
                                                        #         season, need to normalize w/ respect to GP 
-        filtered_player_df = selected_year_data[['REB','AST','STL','BLK','TOV','PTS']]
-        x = ['REB','AST','STL','BLK','TOV','PTS']
-        y = [filtered_player_df.loc['REB'],filtered_player_df.loc['AST'],
+        filtered_player_df = selected_year_data[['REB','AST','STL','BLK','TOV','PTS','FG_PCT','FG3_PCT','FT_PCT']]
+        #  Bar graph for displaying basic data 
+        basic_stats_x = ['REB','AST','STL','BLK','TOV','PTS']
+        basic_stats_y = [filtered_player_df.loc['REB'],filtered_player_df.loc['AST'],
              filtered_player_df.loc['STL'],filtered_player_df.loc['BLK'],
              filtered_player_df.loc['TOV'],filtered_player_df.loc['PTS']]
-        fig = go.Figure(data=[go.Bar(x=x,y=y,name=player_team_selected)])
-        return dcc.Graph(figure=fig)
+        basic_stats_bar = go.Figure(data=[go.Bar(x=basic_stats_x,y=basic_stats_y,name=player_team_selected)])
+        #  Bar graph for displaying percentages
+        perc_stats_x = ['FG_PCT','FG3_PCT','FT_PCT']
+        perc_stats_y = [filtered_player_df.loc['FG_PCT'],filtered_player_df.loc['FG3_PCT'],
+             filtered_player_df.loc['FT_PCT']]
+        perc_stats_bar = go.Figure(data=[go.Bar(x=perc_stats_x,y=perc_stats_y,name=player_team_selected)])
+        return [
+            html.Div([
+                dcc.Graph(figure=basic_stats_bar),
+            ]
+            ),
+            html.Div(children='''
+                                Player Percentage Data
+                               ''',
+                     style={
+                         'textAlign': 'center'
+                     }),
+            dcc.Graph(figure=perc_stats_bar)
+        ]
 
 
 #  Callback updates value for people-dropdown based on player/team selected
