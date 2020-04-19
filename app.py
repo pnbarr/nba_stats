@@ -9,6 +9,7 @@ from nba_api.stats.library.parameters import Season
 import plotly.graph_objects as go
 import plotly.express as px 
 import pandas as pd 
+import numpy as np
 
 # ==================================== SandBox Area ==================================================== #
 nba_teams = teams.get_teams()  # nba_teams is a list of dictionaries
@@ -195,8 +196,8 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         basic_stats_bar = go.Figure(data=[go.Bar(x=basic_stats_x,y=basic_stats_y,name=player_team_selected)])
         #  Bar graph for displaying percentages
         perc_stats_x = ['FG_PCT','FG3_PCT','FT_PCT']
-        perc_stats_y = [filtered_player_df.loc['FG_PCT'],filtered_player_df.loc['FG3_PCT'],
-             filtered_player_df.loc['FT_PCT']]
+        perc_stats_y = np.multiply(100, [filtered_player_df.loc['FG_PCT'],filtered_player_df.loc['FG3_PCT'],
+             filtered_player_df.loc['FT_PCT']])
         perc_stats_bar = go.Figure(data=[go.Bar(x=perc_stats_x,y=perc_stats_y,name=player_team_selected)])
         return [
             html.Div([
