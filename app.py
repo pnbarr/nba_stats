@@ -4,7 +4,8 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 from nba_api.stats.static import players, teams
-from nba_api.stats.endpoints import commonallplayers, leaguegamefinder, commonplayerinfo, playercareerstats, teamyearbyyearstats
+from nba_api.stats.endpoints import commonallplayers, leaguegamefinder, commonplayerinfo, playercareerstats, teamyearbyyearstats, shotchartdetail
+from nba_api.stats.endpoints import shotchartlineupdetail
 from nba_api.stats.library.parameters import Season
 import plotly.graph_objects as go
 import plotly.express as px 
@@ -41,6 +42,12 @@ team_example_df = team_example.get_data_frames()[0]
 player_example = playercareerstats.PlayerCareerStats(player_id=nba_players[0]['id'])
 player_example_df = player_example.get_data_frames()[0]
 
+# Shot Chart Detail
+player_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=2544, season_nullable='2013-14', season_type_all_star='Regular Season')
+player_shot_df = player_shot_data.get_data_frames()[0]
+data_columns = ['SHOT_TYPE','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y','SHOT_ATTEMPTED_FLAG','SHOT_MADE_FLAG']
+filtered_player_shot_df = player_shot_df[data_columns]
+print(filtered_player_shot_df)
 # ======================================================================================================= #
 
 def build_tabs():
