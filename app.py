@@ -4,7 +4,8 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 from nba_api.stats.static import players, teams
-from nba_api.stats.endpoints import commonallplayers, leaguegamefinder, commonplayerinfo, playercareerstats, teamyearbyyearstats
+from nba_api.stats.endpoints import commonallplayers, leaguegamefinder, commonplayerinfo, playercareerstats, teamyearbyyearstats, shotchartdetail
+from nba_api.stats.endpoints import shotchartlineupdetail
 from nba_api.stats.library.parameters import Season
 import plotly.graph_objects as go
 import plotly.express as px 
@@ -41,6 +42,12 @@ team_example_df = team_example.get_data_frames()[0]
 player_example = playercareerstats.PlayerCareerStats(player_id=nba_players[0]['id'])
 player_example_df = player_example.get_data_frames()[0]
 
+# Shot Chart Detail
+# player_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=2544, season_nullable='2013-14', season_type_all_star='Regular Season')
+# player_shot_df = player_shot_data.get_data_frames()[0]
+# data_columns = ['SHOT_TYPE','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y','SHOT_ATTEMPTED_FLAG','SHOT_MADE_FLAG']
+# filtered_player_shot_df = player_shot_df[data_columns]
+# print(filtered_player_shot_df)
 # ======================================================================================================= #
 
 def build_tabs():
@@ -187,6 +194,7 @@ def update_statsgraph_figure(group_selected, player_team_selected):
                                                        #  TODO : Include logic to average player's stats if 
                                                        #         played for more than one team in a given
                                                        #         season, need to normalize w/ respect to GP 
+        season = selected_year_data['SEASON_ID']
         filtered_player_df = selected_year_data[['REB','AST','STL','BLK','TOV','PTS','FG_PCT','FG3_PCT','FT_PCT']]
         #  Bar graph for displaying basic data 
         basic_stats_x = ['REB','AST','STL','BLK','TOV','PTS']
@@ -199,6 +207,22 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         perc_stats_y = np.multiply(100, [filtered_player_df.loc['FG_PCT'],filtered_player_df.loc['FG3_PCT'],
              filtered_player_df.loc['FT_PCT']])
         perc_stats_bar = go.Figure(data=[go.Bar(x=perc_stats_x,y=perc_stats_y,name=player_team_selected)])
+
+        # Player shot chart detail
+        player_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=player_id, season_nullable=season, season_type_all_star='Regular Season')
+        player_shot_df = player_shot_data.get_data_frames()[0]
+        data_columns = ['SHOT_TYPE','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y','SHOT_ATTEMPTED_FLAG','SHOT_MADE_FLAG']
+        filtered_player_shot_df = player_shot_df[data_columns]
+        xlocs = filtered_player_shot_df['LOC_X'].tolist()
+        ylocs = filtered_player_shot_df['LOC_Y'].tolist()
+        player_shot_chart = go.Figure()
+        player_shot_chart.add_trace(go.Scatter(
+            x=xlocs, y=ylocs, mode='markers', name='markers',
+            marker=dict(
+                sizemode='area', sizemin=2.5,
+                line=dict(width=1, color='#333333'), symbol='hexagon',
+            ),
+        ))
         return [
             html.Div([
                 dcc.Graph(figure=basic_stats_bar),
@@ -210,7 +234,14 @@ def update_statsgraph_figure(group_selected, player_team_selected):
                      style={
                          'textAlign': 'center'
                      }),
-            dcc.Graph(figure=perc_stats_bar)
+            dcc.Graph(figure=perc_stats_bar),
+            html.Div(children='''
+                                Player Shot Chart Data
+                               ''',
+                     style={
+                         'textAlign': 'center'
+                     }),
+            dcc.Graph(figure=player_shot_chart)      
         ]
 
 
