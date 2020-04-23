@@ -43,9 +43,11 @@ player_example = playercareerstats.PlayerCareerStats(player_id=nba_players[0]['i
 player_example_df = player_example.get_data_frames()[0]
 
 # Shot Chart Detail
-# player_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=2544, season_nullable='2013-14', season_type_all_star='Regular Season')
-# player_shot_df = player_shot_data.get_data_frames()[0]
-# data_columns = ['SHOT_TYPE','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y','SHOT_ATTEMPTED_FLAG','SHOT_MADE_FLAG']
+league_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=0, season_nullable='2013-14', season_type_all_star='Regular Season')
+league_shot_df = league_shot_data.get_data_frames()[1]
+print('2013-14 League Shooting Averages')
+print(league_shot_df)
+data_columns = ['SHOT_TYPE','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y','SHOT_ATTEMPTED_FLAG','SHOT_MADE_FLAG']
 # filtered_player_shot_df = player_shot_df[data_columns]
 # print(filtered_player_shot_df)
 # ======================================================================================================= #
@@ -89,6 +91,194 @@ def build_team_tab():
 
 def build_player_tab():
     return
+
+def draw_plotly_court(fig, fig_width=600, margins=10):        
+    # From: https://community.plot.ly/t/arc-shape-with-path/7205/5
+    def ellipse_arc(x_center=0.0, y_center=0.0, a=10.5, b=10.5, start_angle=0.0, end_angle=2 * np.pi, N=200, closed=False):
+        t = np.linspace(start_angle, end_angle, N)
+        x = x_center + a * np.cos(t)
+        y = y_center + b * np.sin(t)
+        path = f'M {x[0]}, {y[0]}'
+        for k in range(1, len(t)):
+            path += f'L{x[k]}, {y[k]}'
+        if closed:
+            path += ' Z'
+        return path
+
+    fig_height = fig_width * (470 + 2 * margins) / (500 + 2 * margins)
+    fig.update_layout(width=fig_width, height=fig_height)
+
+    # Set axes ranges
+    fig.update_xaxes(range=[-250 - margins, 250 + margins])
+    fig.update_yaxes(range=[-52.5 - margins, 417.5 + margins])
+
+    threept_break_y = 89.47765084
+    three_line_col = "#777777"
+    main_line_col = "#777777"
+
+    fig.update_layout(
+        # Line Horizontal
+        margin=dict(l=20, r=20, t=20, b=20),
+        paper_bgcolor="white",
+        plot_bgcolor="white",
+        yaxis=dict(
+            scaleanchor="x",
+            scaleratio=1,
+            showgrid=False,
+            zeroline=False,
+            showline=False,
+            ticks='',
+            showticklabels=False,
+            fixedrange=True,
+        ),
+        xaxis=dict(
+            showgrid=False,
+            zeroline=False,
+            showline=False,
+            ticks='',
+            showticklabels=False,
+            fixedrange=True,
+        ),
+        shapes=[
+            dict(
+                type="rect", x0=-250, y0=-52.5, x1=250, y1=417.5,
+                line=dict(color=main_line_col, width=1),
+                # fillcolor='#333333',
+                layer='below'
+            ),
+            dict(
+                type="rect", x0=-80, y0=-52.5, x1=80, y1=137.5,
+                line=dict(color=main_line_col, width=1),
+                # fillcolor='#333333',
+                layer='below'
+            ),
+            dict(
+                type="rect", x0=-60, y0=-52.5, x1=60, y1=137.5,
+                line=dict(color=main_line_col, width=1),
+                # fillcolor='#333333',
+                layer='below'
+            ),
+            dict(
+                type="circle", x0=-60, y0=77.5, x1=60, y1=197.5, xref="x", yref="y",
+                line=dict(color=main_line_col, width=1),
+                # fillcolor='#dddddd',
+                layer='below'
+            ),
+            dict(
+                type="line", x0=-60, y0=137.5, x1=60, y1=137.5,
+                line=dict(color=main_line_col, width=1),
+                layer='below'
+            ),
+
+            dict(
+                type="rect", x0=-2, y0=-7.25, x1=2, y1=-12.5,
+                line=dict(color="#ec7607", width=1),
+                fillcolor='#ec7607',
+            ),
+            dict(
+                type="circle", x0=-7.5, y0=-7.5, x1=7.5, y1=7.5, xref="x", yref="y",
+                line=dict(color="#ec7607", width=1),
+            ),
+            dict(
+                type="line", x0=-30, y0=-12.5, x1=30, y1=-12.5,
+                line=dict(color="#ec7607", width=1),
+            ),
+
+            dict(type="path",
+                 path=ellipse_arc(a=40, b=40, start_angle=0, end_angle=np.pi),
+                 line=dict(color=main_line_col, width=1), layer='below'),
+            dict(type="path",
+                 path=ellipse_arc(a=237.5, b=237.5, start_angle=0.386283101, end_angle=np.pi - 0.386283101),
+                 line=dict(color=main_line_col, width=1), layer='below'),
+            dict(
+                type="line", x0=-220, y0=-52.5, x1=-220, y1=threept_break_y,
+                line=dict(color=three_line_col, width=1), layer='below'
+            ),
+            dict(
+                type="line", x0=-220, y0=-52.5, x1=-220, y1=threept_break_y,
+                line=dict(color=three_line_col, width=1), layer='below'
+            ),
+            dict(
+                type="line", x0=220, y0=-52.5, x1=220, y1=threept_break_y,
+                line=dict(color=three_line_col, width=1), layer='below'
+            ),
+
+            dict(
+                type="line", x0=-250, y0=227.5, x1=-220, y1=227.5,
+                line=dict(color=main_line_col, width=1), layer='below'
+            ),
+            dict(
+                type="line", x0=250, y0=227.5, x1=220, y1=227.5,
+                line=dict(color=main_line_col, width=1), layer='below'
+            ),
+            dict(
+                type="line", x0=-90, y0=17.5, x1=-80, y1=17.5,
+                line=dict(color=main_line_col, width=1), layer='below'
+            ),
+            dict(
+                type="line", x0=-90, y0=27.5, x1=-80, y1=27.5,
+                line=dict(color=main_line_col, width=1), layer='below'
+            ),
+            dict(
+                type="line", x0=-90, y0=57.5, x1=-80, y1=57.5,
+                line=dict(color=main_line_col, width=1), layer='below'
+            ),
+            dict(
+                type="line", x0=-90, y0=87.5, x1=-80, y1=87.5,
+                line=dict(color=main_line_col, width=1), layer='below'
+            ),
+            dict(
+                type="line", x0=90, y0=17.5, x1=80, y1=17.5,
+                line=dict(color=main_line_col, width=1), layer='below'
+            ),
+            dict(
+                type="line", x0=90, y0=27.5, x1=80, y1=27.5,
+                line=dict(color=main_line_col, width=1), layer='below'
+            ),
+            dict(
+                type="line", x0=90, y0=57.5, x1=80, y1=57.5,
+                line=dict(color=main_line_col, width=1), layer='below'
+            ),
+            dict(
+                type="line", x0=90, y0=87.5, x1=80, y1=87.5,
+                line=dict(color=main_line_col, width=1), layer='below'
+            ),
+
+            dict(type="path",
+                 path=ellipse_arc(y_center=417.5, a=60, b=60, start_angle=-0, end_angle=-np.pi),
+                 line=dict(color=main_line_col, width=1), layer='below'),
+
+        ]
+    )
+    return True
+
+def generate_player_shotchart_averages(player_shot_chart_df):
+    # Goal : Generate player's shot chart averages for each zone
+    # Input : Player shot chart dataframe from shotchartdetail API endpoint
+    # Output : Dataframe containing players averages for each area for a given NBA Regular season
+    # For each of the 20 shooting zones, calculate the following:
+    # 1) FGA
+    # 2) FGM
+    # 3) FG_PCT
+    # 4) Frequency
+
+    # Columns needed to calculate the above data
+    data_columns = ['SHOT_ZONE_BASIC','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_ATTEMPTED_FLAG','SHOT_MADE_FLAG']
+    filtered_player_shot_df = player_shot_chart_df[data_columns]
+    print('Rookie Season Shot Chart Data')
+    print(filtered_player_shot_df)
+    second_zone = filtered_player_shot_df.loc[(filtered_player_shot_df['SHOT_ZONE_BASIC'] == 'Above the Break 3') & (filtered_player_shot_df['SHOT_ZONE_AREA'] == 'Center(C)') & (filtered_player_shot_df['SHOT_ZONE_RANGE'] == '24+ ft.')]
+    print('2nd shot zone')
+    print(second_zone)
+    second_zone_FGM = second_zone.SHOT_MADE_FLAG.sum()
+    second_zone_FGA = second_zone.SHOT_ATTEMPTED_FLAG.sum()
+    second_zone_AVG = 0
+    if second_zone_FGA != 0:
+        second_zone_AVG = second_zone_FGM/second_zone_FGA
+    print("FGM = {}. FGA = {}. FG% = {}.".format(second_zone_FGM, second_zone_FGA, second_zone_AVG))
+
+    return True
+
 
 
 # ======================================================================================================= #
@@ -211,11 +401,15 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         # Player shot chart detail
         player_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=player_id, season_nullable=season, season_type_all_star='Regular Season')
         player_shot_df = player_shot_data.get_data_frames()[0]
+        #print(player_shot_df)
+        generate_player_shotchart_averages(player_shot_df)
         data_columns = ['SHOT_TYPE','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y','SHOT_ATTEMPTED_FLAG','SHOT_MADE_FLAG']
         filtered_player_shot_df = player_shot_df[data_columns]
+        #print(filtered_player_shot_df)
         xlocs = filtered_player_shot_df['LOC_X'].tolist()
         ylocs = filtered_player_shot_df['LOC_Y'].tolist()
         player_shot_chart = go.Figure()
+        draw_plotly_court(player_shot_chart)
         player_shot_chart.add_trace(go.Scatter(
             x=xlocs, y=ylocs, mode='markers', name='markers',
             marker=dict(
