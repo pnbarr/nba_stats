@@ -256,30 +256,88 @@ def generate_player_shotchart_averages(player_shot_chart_df):
     # Goal : Generate player's shot chart averages for each zone
     # Input : Player shot chart dataframe from shotchartdetail API endpoint
     # Output : Dataframe containing players averages for each area for a given NBA Regular season
-    # For each of the 20 shooting zones, calculate the following:
-    # 1) FGA
-    # 2) FGM
-    # 3) FG_PCT
-    # 4) Frequency
+
+    # Columns of interest
+    shot_zone_basic = 'SHOT_ZONE_BASIC'
+    shot_zone_area = 'SHOT_ZONE_AREA'
+    shot_zone_range = 'SHOT_ZONE_RANGE'
+    shot_attempted_flag = 'SHOT_ATTEMPTED_FLAG'
+    shot_made_flag = 'SHOT_MADE_FLAG'
+    fgm = 'FGM'
+    fga = 'FGA'
+    fgp = 'FG_PCT'
+    fgf = 'FREQ'
+
+    # Shot Zone Basic strings
+    basic_above_the_break_3 = 'Above the Break 3'
+    basic_backcourt = 'Backcourt'
+    basic_non_RA = 'In The Paint (Non-RA)'
+    basic_left_corner_3 = 'Left Corner 3'
+    basic_mid_range = 'Mid-Range'
+    basic_restricted_area = 'Restricted Area'
+    basic_right_corner_3 ='Right Corner 3'
+    
+    # Shot Zone Area strings
+    area_back_court = 'Back Court(BC)'
+    area_center = 'Center(C)'
+    area_left_side_center = 'Left Side Center(LC)'
+    area_right_side_center = 'Right Side Center(RC)'
+    area_left_side = 'Left Side(L)'
+    area_right_side ='Right Side(R)'
+
+    # Shot Zone Range strings
+    range_back_court = 'Back Court Shot'
+    range_24 = '24+ ft.'
+    range_8_to_16 = '8-16 ft.'
+    range_0_to_8 = 'Less Than 8 ft.'
+    range_16_to_24 = '16-24 ft.'
+
+    # Shot Zone Basic List : Basic shot zone data for each of the 20 shot zones
+    shot_zone_basic_list = [basic_above_the_break_3, basic_above_the_break_3, basic_above_the_break_3,
+                            basic_above_the_break_3, basic_backcourt, basic_non_RA, basic_non_RA,
+                            basic_non_RA, basic_non_RA, basic_left_corner_3, basic_mid_range,
+                            basic_mid_range, basic_mid_range, basic_mid_range, basic_mid_range,
+                            basic_mid_range, basic_mid_range, basic_mid_range, basic_restricted_area,
+                            basic_right_corner_3]
+    # Shot Zone Area List : Area zone data for each of the 20 shot zones
+    shot_zone_area_list = [area_back_court, area_center, area_left_side_center, area_right_side_center,
+                           area_back_court, area_center, area_center, area_left_side, area_right_side,
+                           area_left_side, area_center, area_center, area_left_side_center, area_left_side,
+                           area_left_side, area_right_side_center, area_right_side, area_right_side,
+                           area_center, area_right_side ]
+    # Shot Zone Range List : Range zone data for each of the 20 shot zones
+    shot_zone_range_list = [range_back_court, range_24, range_24, range_24, range_back_court, range_8_to_16,
+                            range_0_to_8, range_8_to_16, range_8_to_16, range_24, range_8_to_16, range_16_to_24,
+                            range_16_to_24, range_16_to_24, range_8_to_16, range_16_to_24, range_16_to_24,
+                            range_8_to_16, range_0_to_8, range_24]
 
     # Columns needed to calculate the above data
-    data_columns = ['SHOT_ZONE_BASIC','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_ATTEMPTED_FLAG','SHOT_MADE_FLAG']
+    data_columns = [shot_zone_basic, shot_zone_area, shot_zone_range, shot_attempted_flag, shot_made_flag]
     filtered_player_shot_df = player_shot_chart_df[data_columns]
-    print('Rookie Season Shot Chart Data')
-    print(filtered_player_shot_df)
-    second_zone = filtered_player_shot_df.loc[(filtered_player_shot_df['SHOT_ZONE_BASIC'] == 'Above the Break 3') & (filtered_player_shot_df['SHOT_ZONE_AREA'] == 'Center(C)') & (filtered_player_shot_df['SHOT_ZONE_RANGE'] == '24+ ft.')]
-    print('2nd shot zone')
-    print(second_zone)
-    second_zone_FGM = second_zone.SHOT_MADE_FLAG.sum()
-    second_zone_FGA = second_zone.SHOT_ATTEMPTED_FLAG.sum()
-    second_zone_AVG = 0
-    if second_zone_FGA != 0:
-        second_zone_AVG = second_zone_FGM/second_zone_FGA
-    print("FGM = {}. FGA = {}. FG% = {}.".format(second_zone_FGM, second_zone_FGA, second_zone_AVG))
+    total_FGA = len(filtered_player_shot_df.index)
 
-    return True
-
-
+    # ==============================    Generates Player Shot Chart Dataframe for all 20 shot zones   ==============================
+    # Define columns for data frame
+    final_df = pd.DataFrame(columns=[shot_zone_basic, shot_zone_area, shot_zone_range, fga, fgm, fgp, fgf])
+    for shot_zone_number in range(0, 20):
+        current_zone = filtered_player_shot_df.loc[(filtered_player_shot_df[shot_zone_basic] == shot_zone_basic_list[shot_zone_number])
+                                                & (filtered_player_shot_df[shot_zone_area] == shot_zone_area_list[shot_zone_number])
+                                                & (filtered_player_shot_df[shot_zone_range] == shot_zone_range_list[shot_zone_number])]
+        current_zone_FGM = current_zone.SHOT_MADE_FLAG.sum()
+        current_zone_FGA = current_zone.SHOT_ATTEMPTED_FLAG.sum()
+        current_zone_AVG = 0
+        current_zone_FREQ = 0
+        # Don't want to divide by 0
+        if total_FGA != 0:
+            current_zone_FREQ = current_zone_FGA/total_FGA
+        # Don't want to divide by 0
+        if current_zone_FGA != 0:
+            current_zone_AVG = current_zone_FGM/current_zone_FGA
+        current_zone_data = [shot_zone_basic_list[shot_zone_number], shot_zone_area_list[shot_zone_number],
+                             shot_zone_range_list[shot_zone_number], current_zone_FGA, current_zone_FGM,
+                             current_zone_AVG,current_zone_FREQ]
+        final_df.loc[shot_zone_number] = current_zone_data
+    return final_df
 
 # ======================================================================================================= #
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -316,7 +374,7 @@ app.layout = html.Div(children=[
     html.Div(id='tabs-content')
 ])
 
-#  Callback updates options for people-dropdown based on group selected
+# Callback updates options for people-dropdown based on group selected
 @app.callback(
     Output('people-dropdown', 'options'),
     [Input('tabs-group', 'value')])
@@ -332,7 +390,7 @@ def set_people_options(group):
             nba_player_list.append(player['full_name'])
         return [{'label': i, 'value': i} for i in nba_player_list]
 
-#  Callback updates graph based on player/team selected
+# Callback updates graph based on player/team selected
 @app.callback(
     Output('tabs-content','children'),
     [Input('tabs-group','value'),
@@ -348,13 +406,13 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         selected_year_data = team_yby_df.loc[team_yby_df['YEAR'] == selected_year]
         data_columns = ['WINS','LOSSES','CONF_RANK','REB','AST','STL','TOV','BLK','PTS']
         filtered_team_yby_df = selected_year_data[data_columns]
-        #  Pie chart for display record data
+        # Pie chart for display record data
         record_pie_labels = ['WINS','LOSSES']
         record_pie_values = [filtered_team_yby_df.iloc[0]['WINS'], filtered_team_yby_df.iloc[0]['LOSSES']]
         record_pie = go.Figure(data=[go.Pie(labels=record_pie_labels, values=record_pie_values)])
         colors=['cyan','orange']
         record_pie.update_traces(marker=dict(colors=colors))
-        #  Bar graph for displaying basic data 
+        # Bar graph for displaying basic data 
         basic_bar_labels = ['REB','AST','STL','TOV','BLK','PTS']
         basic_bar_values = [filtered_team_yby_df.iloc[0]['REB'], filtered_team_yby_df.iloc[0]['AST'],
                              filtered_team_yby_df.iloc[0]['STL'], filtered_team_yby_df.iloc[0]['TOV'],
@@ -386,13 +444,13 @@ def update_statsgraph_figure(group_selected, player_team_selected):
                                                        #         season, need to normalize w/ respect to GP 
         season = selected_year_data['SEASON_ID']
         filtered_player_df = selected_year_data[['REB','AST','STL','BLK','TOV','PTS','FG_PCT','FG3_PCT','FT_PCT']]
-        #  Bar graph for displaying basic data 
+        # Bar graph for displaying basic data 
         basic_stats_x = ['REB','AST','STL','BLK','TOV','PTS']
         basic_stats_y = [filtered_player_df.loc['REB'],filtered_player_df.loc['AST'],
              filtered_player_df.loc['STL'],filtered_player_df.loc['BLK'],
              filtered_player_df.loc['TOV'],filtered_player_df.loc['PTS']]
         basic_stats_bar = go.Figure(data=[go.Bar(x=basic_stats_x,y=basic_stats_y,name=player_team_selected)])
-        #  Bar graph for displaying percentages
+        # Bar graph for displaying percentages
         perc_stats_x = ['FG_PCT','FG3_PCT','FT_PCT']
         perc_stats_y = np.multiply(100, [filtered_player_df.loc['FG_PCT'],filtered_player_df.loc['FG3_PCT'],
              filtered_player_df.loc['FT_PCT']])
@@ -401,11 +459,9 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         # Player shot chart detail
         player_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=player_id, season_nullable=season, season_type_all_star='Regular Season')
         player_shot_df = player_shot_data.get_data_frames()[0]
-        #print(player_shot_df)
-        generate_player_shotchart_averages(player_shot_df)
+        print(generate_player_shotchart_averages(player_shot_df))
         data_columns = ['SHOT_TYPE','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y','SHOT_ATTEMPTED_FLAG','SHOT_MADE_FLAG']
         filtered_player_shot_df = player_shot_df[data_columns]
-        #print(filtered_player_shot_df)
         xlocs = filtered_player_shot_df['LOC_X'].tolist()
         ylocs = filtered_player_shot_df['LOC_Y'].tolist()
         player_shot_chart = go.Figure()
@@ -439,7 +495,7 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         ]
 
 
-#  Callback updates value for people-dropdown based on player/team selected
+# Callback updates value for people-dropdown based on player/team selected
 @app.callback(
     Output('people-dropdown', 'value'),
     [Input('people-dropdown', 'options')])
