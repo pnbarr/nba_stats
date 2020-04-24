@@ -43,9 +43,11 @@ player_example = playercareerstats.PlayerCareerStats(player_id=nba_players[0]['i
 player_example_df = player_example.get_data_frames()[0]
 
 # Shot Chart Detail
-# player_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=2544, season_nullable='2013-14', season_type_all_star='Regular Season')
-# player_shot_df = player_shot_data.get_data_frames()[0]
-# data_columns = ['SHOT_TYPE','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y','SHOT_ATTEMPTED_FLAG','SHOT_MADE_FLAG']
+league_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=0, season_nullable='2013-14', season_type_all_star='Regular Season')
+league_shot_df = league_shot_data.get_data_frames()[1]
+print('2013-14 League Shooting Averages')
+print(league_shot_df)
+data_columns = ['SHOT_TYPE','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y','SHOT_ATTEMPTED_FLAG','SHOT_MADE_FLAG']
 # filtered_player_shot_df = player_shot_df[data_columns]
 # print(filtered_player_shot_df)
 # ======================================================================================================= #
@@ -90,6 +92,252 @@ def build_team_tab():
 def build_player_tab():
     return
 
+def draw_plotly_court(fig, fig_width=600, margins=10):        
+    # From: https://community.plot.ly/t/arc-shape-with-path/7205/5
+    def ellipse_arc(x_center=0.0, y_center=0.0, a=10.5, b=10.5, start_angle=0.0, end_angle=2 * np.pi, N=200, closed=False):
+        t = np.linspace(start_angle, end_angle, N)
+        x = x_center + a * np.cos(t)
+        y = y_center + b * np.sin(t)
+        path = f'M {x[0]}, {y[0]}'
+        for k in range(1, len(t)):
+            path += f'L{x[k]}, {y[k]}'
+        if closed:
+            path += ' Z'
+        return path
+
+    fig_height = fig_width * (470 + 2 * margins) / (500 + 2 * margins)
+    fig.update_layout(width=fig_width, height=fig_height)
+
+    # Set axes ranges
+    fig.update_xaxes(range=[-250 - margins, 250 + margins])
+    fig.update_yaxes(range=[-52.5 - margins, 417.5 + margins])
+
+    threept_break_y = 89.47765084
+    three_line_col = "#777777"
+    main_line_col = "#777777"
+
+    fig.update_layout(
+        # Line Horizontal
+        margin=dict(l=20, r=20, t=20, b=20),
+        paper_bgcolor="white",
+        plot_bgcolor="white",
+        yaxis=dict(
+            scaleanchor="x",
+            scaleratio=1,
+            showgrid=False,
+            zeroline=False,
+            showline=False,
+            ticks='',
+            showticklabels=False,
+            fixedrange=True,
+        ),
+        xaxis=dict(
+            showgrid=False,
+            zeroline=False,
+            showline=False,
+            ticks='',
+            showticklabels=False,
+            fixedrange=True,
+        ),
+        shapes=[
+            dict(
+                type="rect", x0=-250, y0=-52.5, x1=250, y1=417.5,
+                line=dict(color=main_line_col, width=1),
+                # fillcolor='#333333',
+                layer='below'
+            ),
+            dict(
+                type="rect", x0=-80, y0=-52.5, x1=80, y1=137.5,
+                line=dict(color=main_line_col, width=1),
+                # fillcolor='#333333',
+                layer='below'
+            ),
+            dict(
+                type="rect", x0=-60, y0=-52.5, x1=60, y1=137.5,
+                line=dict(color=main_line_col, width=1),
+                # fillcolor='#333333',
+                layer='below'
+            ),
+            dict(
+                type="circle", x0=-60, y0=77.5, x1=60, y1=197.5, xref="x", yref="y",
+                line=dict(color=main_line_col, width=1),
+                # fillcolor='#dddddd',
+                layer='below'
+            ),
+            dict(
+                type="line", x0=-60, y0=137.5, x1=60, y1=137.5,
+                line=dict(color=main_line_col, width=1),
+                layer='below'
+            ),
+
+            dict(
+                type="rect", x0=-2, y0=-7.25, x1=2, y1=-12.5,
+                line=dict(color="#ec7607", width=1),
+                fillcolor='#ec7607',
+            ),
+            dict(
+                type="circle", x0=-7.5, y0=-7.5, x1=7.5, y1=7.5, xref="x", yref="y",
+                line=dict(color="#ec7607", width=1),
+            ),
+            dict(
+                type="line", x0=-30, y0=-12.5, x1=30, y1=-12.5,
+                line=dict(color="#ec7607", width=1),
+            ),
+
+            dict(type="path",
+                 path=ellipse_arc(a=40, b=40, start_angle=0, end_angle=np.pi),
+                 line=dict(color=main_line_col, width=1), layer='below'),
+            dict(type="path",
+                 path=ellipse_arc(a=237.5, b=237.5, start_angle=0.386283101, end_angle=np.pi - 0.386283101),
+                 line=dict(color=main_line_col, width=1), layer='below'),
+            dict(
+                type="line", x0=-220, y0=-52.5, x1=-220, y1=threept_break_y,
+                line=dict(color=three_line_col, width=1), layer='below'
+            ),
+            dict(
+                type="line", x0=-220, y0=-52.5, x1=-220, y1=threept_break_y,
+                line=dict(color=three_line_col, width=1), layer='below'
+            ),
+            dict(
+                type="line", x0=220, y0=-52.5, x1=220, y1=threept_break_y,
+                line=dict(color=three_line_col, width=1), layer='below'
+            ),
+
+            dict(
+                type="line", x0=-250, y0=227.5, x1=-220, y1=227.5,
+                line=dict(color=main_line_col, width=1), layer='below'
+            ),
+            dict(
+                type="line", x0=250, y0=227.5, x1=220, y1=227.5,
+                line=dict(color=main_line_col, width=1), layer='below'
+            ),
+            dict(
+                type="line", x0=-90, y0=17.5, x1=-80, y1=17.5,
+                line=dict(color=main_line_col, width=1), layer='below'
+            ),
+            dict(
+                type="line", x0=-90, y0=27.5, x1=-80, y1=27.5,
+                line=dict(color=main_line_col, width=1), layer='below'
+            ),
+            dict(
+                type="line", x0=-90, y0=57.5, x1=-80, y1=57.5,
+                line=dict(color=main_line_col, width=1), layer='below'
+            ),
+            dict(
+                type="line", x0=-90, y0=87.5, x1=-80, y1=87.5,
+                line=dict(color=main_line_col, width=1), layer='below'
+            ),
+            dict(
+                type="line", x0=90, y0=17.5, x1=80, y1=17.5,
+                line=dict(color=main_line_col, width=1), layer='below'
+            ),
+            dict(
+                type="line", x0=90, y0=27.5, x1=80, y1=27.5,
+                line=dict(color=main_line_col, width=1), layer='below'
+            ),
+            dict(
+                type="line", x0=90, y0=57.5, x1=80, y1=57.5,
+                line=dict(color=main_line_col, width=1), layer='below'
+            ),
+            dict(
+                type="line", x0=90, y0=87.5, x1=80, y1=87.5,
+                line=dict(color=main_line_col, width=1), layer='below'
+            ),
+
+            dict(type="path",
+                 path=ellipse_arc(y_center=417.5, a=60, b=60, start_angle=-0, end_angle=-np.pi),
+                 line=dict(color=main_line_col, width=1), layer='below'),
+
+        ]
+    )
+    return True
+
+def generate_player_shotchart_averages(player_shot_chart_df):
+    # Goal : Generate player's shot chart averages for each zone
+    # Input : Player shot chart dataframe from shotchartdetail API endpoint
+    # Output : Dataframe containing players averages for each area for a given NBA Regular season
+
+    # Columns of interest
+    shot_zone_basic = 'SHOT_ZONE_BASIC'
+    shot_zone_area = 'SHOT_ZONE_AREA'
+    shot_zone_range = 'SHOT_ZONE_RANGE'
+    shot_attempted_flag = 'SHOT_ATTEMPTED_FLAG'
+    shot_made_flag = 'SHOT_MADE_FLAG'
+    fgm = 'FGM'
+    fga = 'FGA'
+    fgp = 'FG_PCT'
+    fgf = 'FREQ'
+
+    # Shot Zone Basic strings
+    basic_above_the_break_3 = 'Above the Break 3'
+    basic_backcourt = 'Backcourt'
+    basic_non_RA = 'In The Paint (Non-RA)'
+    basic_left_corner_3 = 'Left Corner 3'
+    basic_mid_range = 'Mid-Range'
+    basic_restricted_area = 'Restricted Area'
+    basic_right_corner_3 ='Right Corner 3'
+    
+    # Shot Zone Area strings
+    area_back_court = 'Back Court(BC)'
+    area_center = 'Center(C)'
+    area_left_side_center = 'Left Side Center(LC)'
+    area_right_side_center = 'Right Side Center(RC)'
+    area_left_side = 'Left Side(L)'
+    area_right_side ='Right Side(R)'
+
+    # Shot Zone Range strings
+    range_back_court = 'Back Court Shot'
+    range_24 = '24+ ft.'
+    range_8_to_16 = '8-16 ft.'
+    range_0_to_8 = 'Less Than 8 ft.'
+    range_16_to_24 = '16-24 ft.'
+
+    # Shot Zone Basic List : Basic shot zone data for each of the 20 shot zones
+    shot_zone_basic_list = [basic_above_the_break_3, basic_above_the_break_3, basic_above_the_break_3,
+                            basic_above_the_break_3, basic_backcourt, basic_non_RA, basic_non_RA,
+                            basic_non_RA, basic_non_RA, basic_left_corner_3, basic_mid_range,
+                            basic_mid_range, basic_mid_range, basic_mid_range, basic_mid_range,
+                            basic_mid_range, basic_mid_range, basic_mid_range, basic_restricted_area,
+                            basic_right_corner_3]
+    # Shot Zone Area List : Area zone data for each of the 20 shot zones
+    shot_zone_area_list = [area_back_court, area_center, area_left_side_center, area_right_side_center,
+                           area_back_court, area_center, area_center, area_left_side, area_right_side,
+                           area_left_side, area_center, area_center, area_left_side_center, area_left_side,
+                           area_left_side, area_right_side_center, area_right_side, area_right_side,
+                           area_center, area_right_side ]
+    # Shot Zone Range List : Range zone data for each of the 20 shot zones
+    shot_zone_range_list = [range_back_court, range_24, range_24, range_24, range_back_court, range_8_to_16,
+                            range_0_to_8, range_8_to_16, range_8_to_16, range_24, range_8_to_16, range_16_to_24,
+                            range_16_to_24, range_16_to_24, range_8_to_16, range_16_to_24, range_16_to_24,
+                            range_8_to_16, range_0_to_8, range_24]
+
+    # Columns needed to calculate the above data
+    data_columns = [shot_zone_basic, shot_zone_area, shot_zone_range, shot_attempted_flag, shot_made_flag]
+    filtered_player_shot_df = player_shot_chart_df[data_columns]
+    total_FGA = len(filtered_player_shot_df.index)
+
+    # ==============================    Generates Player Shot Chart Dataframe for all 20 shot zones   ==============================
+    # Define columns for data frame
+    final_df = pd.DataFrame(columns=[shot_zone_basic, shot_zone_area, shot_zone_range, fga, fgm, fgp, fgf])
+    for shot_zone_number in range(0, 20):
+        current_zone = filtered_player_shot_df.loc[(filtered_player_shot_df[shot_zone_basic] == shot_zone_basic_list[shot_zone_number])
+                                                & (filtered_player_shot_df[shot_zone_area] == shot_zone_area_list[shot_zone_number])
+                                                & (filtered_player_shot_df[shot_zone_range] == shot_zone_range_list[shot_zone_number])]
+        current_zone_FGM = current_zone.SHOT_MADE_FLAG.sum()
+        current_zone_FGA = current_zone.SHOT_ATTEMPTED_FLAG.sum()
+        current_zone_AVG = 0
+        current_zone_FREQ = 0
+        # Don't want to divide by 0
+        if total_FGA != 0:
+            current_zone_FREQ = current_zone_FGA/total_FGA
+        # Don't want to divide by 0
+        if current_zone_FGA != 0:
+            current_zone_AVG = current_zone_FGM/current_zone_FGA
+        current_zone_data = [shot_zone_basic_list[shot_zone_number], shot_zone_area_list[shot_zone_number],
+                             shot_zone_range_list[shot_zone_number], current_zone_FGA, current_zone_FGM,
+                             current_zone_AVG,current_zone_FREQ]
+        final_df.loc[shot_zone_number] = current_zone_data
+    return final_df
 
 # ======================================================================================================= #
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -126,7 +374,7 @@ app.layout = html.Div(children=[
     html.Div(id='tabs-content')
 ])
 
-#  Callback updates options for people-dropdown based on group selected
+# Callback updates options for people-dropdown based on group selected
 @app.callback(
     Output('people-dropdown', 'options'),
     [Input('tabs-group', 'value')])
@@ -142,7 +390,7 @@ def set_people_options(group):
             nba_player_list.append(player['full_name'])
         return [{'label': i, 'value': i} for i in nba_player_list]
 
-#  Callback updates graph based on player/team selected
+# Callback updates graph based on player/team selected
 @app.callback(
     Output('tabs-content','children'),
     [Input('tabs-group','value'),
@@ -158,13 +406,13 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         selected_year_data = team_yby_df.loc[team_yby_df['YEAR'] == selected_year]
         data_columns = ['WINS','LOSSES','CONF_RANK','REB','AST','STL','TOV','BLK','PTS']
         filtered_team_yby_df = selected_year_data[data_columns]
-        #  Pie chart for display record data
+        # Pie chart for display record data
         record_pie_labels = ['WINS','LOSSES']
         record_pie_values = [filtered_team_yby_df.iloc[0]['WINS'], filtered_team_yby_df.iloc[0]['LOSSES']]
         record_pie = go.Figure(data=[go.Pie(labels=record_pie_labels, values=record_pie_values)])
         colors=['cyan','orange']
         record_pie.update_traces(marker=dict(colors=colors))
-        #  Bar graph for displaying basic data 
+        # Bar graph for displaying basic data 
         basic_bar_labels = ['REB','AST','STL','TOV','BLK','PTS']
         basic_bar_values = [filtered_team_yby_df.iloc[0]['REB'], filtered_team_yby_df.iloc[0]['AST'],
                              filtered_team_yby_df.iloc[0]['STL'], filtered_team_yby_df.iloc[0]['TOV'],
@@ -196,13 +444,13 @@ def update_statsgraph_figure(group_selected, player_team_selected):
                                                        #         season, need to normalize w/ respect to GP 
         season = selected_year_data['SEASON_ID']
         filtered_player_df = selected_year_data[['REB','AST','STL','BLK','TOV','PTS','FG_PCT','FG3_PCT','FT_PCT']]
-        #  Bar graph for displaying basic data 
+        # Bar graph for displaying basic data 
         basic_stats_x = ['REB','AST','STL','BLK','TOV','PTS']
         basic_stats_y = [filtered_player_df.loc['REB'],filtered_player_df.loc['AST'],
              filtered_player_df.loc['STL'],filtered_player_df.loc['BLK'],
              filtered_player_df.loc['TOV'],filtered_player_df.loc['PTS']]
         basic_stats_bar = go.Figure(data=[go.Bar(x=basic_stats_x,y=basic_stats_y,name=player_team_selected)])
-        #  Bar graph for displaying percentages
+        # Bar graph for displaying percentages
         perc_stats_x = ['FG_PCT','FG3_PCT','FT_PCT']
         perc_stats_y = np.multiply(100, [filtered_player_df.loc['FG_PCT'],filtered_player_df.loc['FG3_PCT'],
              filtered_player_df.loc['FT_PCT']])
@@ -211,11 +459,13 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         # Player shot chart detail
         player_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=player_id, season_nullable=season, season_type_all_star='Regular Season')
         player_shot_df = player_shot_data.get_data_frames()[0]
+        print(generate_player_shotchart_averages(player_shot_df))
         data_columns = ['SHOT_TYPE','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y','SHOT_ATTEMPTED_FLAG','SHOT_MADE_FLAG']
         filtered_player_shot_df = player_shot_df[data_columns]
         xlocs = filtered_player_shot_df['LOC_X'].tolist()
         ylocs = filtered_player_shot_df['LOC_Y'].tolist()
         player_shot_chart = go.Figure()
+        draw_plotly_court(player_shot_chart)
         player_shot_chart.add_trace(go.Scatter(
             x=xlocs, y=ylocs, mode='markers', name='markers',
             marker=dict(
@@ -245,7 +495,7 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         ]
 
 
-#  Callback updates value for people-dropdown based on player/team selected
+# Callback updates value for people-dropdown based on player/team selected
 @app.callback(
     Output('people-dropdown', 'value'),
     [Input('people-dropdown', 'options')])
