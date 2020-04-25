@@ -43,11 +43,11 @@ player_example = playercareerstats.PlayerCareerStats(player_id=nba_players[0]['i
 player_example_df = player_example.get_data_frames()[0]
 
 # Shot Chart Detail
-league_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=0, season_nullable='2013-14', season_type_all_star='Regular Season')
-league_shot_df = league_shot_data.get_data_frames()[1]
-print('2013-14 League Shooting Averages')
-print(league_shot_df)
-data_columns = ['SHOT_TYPE','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y','SHOT_ATTEMPTED_FLAG','SHOT_MADE_FLAG']
+# league_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=0, season_nullable='2013-14', season_type_all_star='Regular Season')
+# league_shot_df = league_shot_data.get_data_frames()[1]
+# print('2013-14 League Shooting Averages')
+# print(league_shot_df)
+# data_columns = ['SHOT_TYPE','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y','SHOT_ATTEMPTED_FLAG','SHOT_MADE_FLAG']
 # filtered_player_shot_df = player_shot_df[data_columns]
 # print(filtered_player_shot_df)
 # ======================================================================================================= #
@@ -459,9 +459,16 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         # Player shot chart detail
         player_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=player_id, season_nullable=season, season_type_all_star='Regular Season')
         player_shot_df = player_shot_data.get_data_frames()[0]
-        print(generate_player_shotchart_averages(player_shot_df))
-        data_columns = ['SHOT_TYPE','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y','SHOT_ATTEMPTED_FLAG','SHOT_MADE_FLAG']
+        print('Player Shot Zone Average Data')
+        player_zone_averages_df = generate_player_shotchart_averages(player_shot_df)
+        print(player_zone_averages_df)
+        data_columns = ['SHOT_ZONE_BASIC','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y']
         filtered_player_shot_df = player_shot_df[data_columns]
+        print('RAW PLAYER SHOT DATA FRAME')
+        print(filtered_player_shot_df)
+        merged_df = pd.merge(filtered_player_shot_df, player_zone_averages_df,how='inner', on=['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA','SHOT_ZONE_RANGE'])
+        print('MERGED DATA FRAME')
+        print(merged_df)
         xlocs = filtered_player_shot_df['LOC_X'].tolist()
         ylocs = filtered_player_shot_df['LOC_Y'].tolist()
         player_shot_chart = go.Figure()
@@ -474,9 +481,29 @@ def update_statsgraph_figure(group_selected, player_team_selected):
             ),
         ))
         return [
+            html.Div(children='''
+                                Player Shot Chart Data
+                               ''',
+                     style={
+                         'textAlign': 'center'
+                     }),
+
+            html.Div([
+                dcc.Graph(figure=player_shot_chart), 
+            ]
+            ),
+
+            html.Div(children='''
+                                Player Basic Bar Data
+                               ''',
+                     style={
+                         'textAlign': 'center'
+                     }),
+
             html.Div([
                 dcc.Graph(figure=basic_stats_bar),
             ]
+
             ),
             html.Div(children='''
                                 Player Percentage Data
@@ -484,14 +511,11 @@ def update_statsgraph_figure(group_selected, player_team_selected):
                      style={
                          'textAlign': 'center'
                      }),
-            dcc.Graph(figure=perc_stats_bar),
-            html.Div(children='''
-                                Player Shot Chart Data
-                               ''',
-                     style={
-                         'textAlign': 'center'
-                     }),
-            dcc.Graph(figure=player_shot_chart)      
+
+            html.Div([
+                dcc.Graph(figure=perc_stats_bar), 
+            ]
+            ),  
         ]
 
 
