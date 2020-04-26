@@ -252,7 +252,7 @@ def draw_plotly_court(fig, fig_width=600, margins=10):
     )
     return True
 
-def generate_player_shotchart_averages(player_shot_chart_df):
+def generate_player_shotchart_averages(player_id, season):
     # Goal : Generate player's shot chart averages for each zone
     # Input : Player shot chart dataframe from shotchartdetail API endpoint
     # Output : Dataframe containing players averages for each area for a given NBA Regular season
@@ -311,32 +311,56 @@ def generate_player_shotchart_averages(player_shot_chart_df):
                             range_16_to_24, range_16_to_24, range_8_to_16, range_16_to_24, range_16_to_24,
                             range_8_to_16, range_0_to_8, range_24]
 
+    # Player shot chart detail
+    player_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=player_id, season_nullable=season, season_type_all_star='Regular Season')
+    player_shot_chart_df = player_shot_data.get_data_frames()[0]
+    
     # Columns needed to calculate the above data
     data_columns = [shot_zone_basic, shot_zone_area, shot_zone_range, shot_attempted_flag, shot_made_flag]
     filtered_player_shot_df = player_shot_chart_df[data_columns]
     total_FGA = len(filtered_player_shot_df.index)
 
+    # League Average Data
+    league_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=0, season_nullable=season, season_type_all_star='Regular Season')
+    filtered_league_shot_df = league_shot_data.get_data_frames()[1]
+    # print('INSIDE FUNCTION LEAGUE DATA')
+    # print(league_shot_df)
+    # filtered_league_shot_df = league_shot_df[[shot_zone_basic, shot_zone_area, shot_zone_range, fgp]]
+    print('League Average Data')
+    print(filtered_league_shot_df)
+
     # ==============================    Generates Player Shot Chart Dataframe for all 20 shot zones   ==============================
     # Define columns for data frame
     final_df = pd.DataFrame(columns=[shot_zone_basic, shot_zone_area, shot_zone_range, fga, fgm, fgp, fgf])
     for shot_zone_number in range(0, 20):
-        current_zone = filtered_player_shot_df.loc[(filtered_player_shot_df[shot_zone_basic] == shot_zone_basic_list[shot_zone_number])
+        current_player_zone = filtered_player_shot_df.loc[(filtered_player_shot_df[shot_zone_basic] == shot_zone_basic_list[shot_zone_number])
                                                 & (filtered_player_shot_df[shot_zone_area] == shot_zone_area_list[shot_zone_number])
                                                 & (filtered_player_shot_df[shot_zone_range] == shot_zone_range_list[shot_zone_number])]
-        current_zone_FGM = current_zone.SHOT_MADE_FLAG.sum()
-        current_zone_FGA = current_zone.SHOT_ATTEMPTED_FLAG.sum()
-        current_zone_AVG = 0
-        current_zone_FREQ = 0
+        current_player_zone_FGM = current_player_zone.SHOT_MADE_FLAG.sum()
+        current_player_zone_FGA = current_player_zone.SHOT_ATTEMPTED_FLAG.sum()
+        current_player_zone_relative_AVG = 0
+        current_player_zone_FREQ = 0
+        current_league_zone = filtered_league_shot_df.loc[(filtered_league_shot_df[shot_zone_basic] == shot_zone_basic_list[shot_zone_number])
+                                                & (filtered_league_shot_df[shot_zone_area] == shot_zone_area_list[shot_zone_number])
+                                                & (filtered_league_shot_df[shot_zone_range] == shot_zone_range_list[shot_zone_number])]
+        #print('Current League Zone FG%')
+        # print(current_league_zone)
+        current_league_zone_AVG = current_league_zone.FG_PCT.tolist()
+        if len(current_league_zone_AVG) > 0:
+            current_league_zone_AVG = current_league_zone_AVG[0]
+        #print(current_league_zone_AVG)
         # Don't want to divide by 0
         if total_FGA != 0:
-            current_zone_FREQ = current_zone_FGA/total_FGA
+            current_player_zone_FREQ = current_player_zone_FGA/total_FGA
         # Don't want to divide by 0
-        if current_zone_FGA != 0:
-            current_zone_AVG = current_zone_FGM/current_zone_FGA
-        current_zone_data = [shot_zone_basic_list[shot_zone_number], shot_zone_area_list[shot_zone_number],
-                             shot_zone_range_list[shot_zone_number], current_zone_FGA, current_zone_FGM,
-                             current_zone_AVG,current_zone_FREQ]
-        final_df.loc[shot_zone_number] = current_zone_data
+        if current_player_zone_FGA != 0:
+            current_player_zone_relative_AVG = (current_player_zone_FGM/current_player_zone_FGA) - current_league_zone_AVG
+        current_player_zone_data = [shot_zone_basic_list[shot_zone_number], shot_zone_area_list[shot_zone_number],
+                             shot_zone_range_list[shot_zone_number], current_player_zone_FGA, current_player_zone_FGM,
+                             current_player_zone_relative_AVG,current_player_zone_FREQ]
+        final_df.loc[shot_zone_number] = current_player_zone_data
+    print('DATAFRAME RETURNED BY FUNCTION')
+    print(final_df)
     return final_df
 
 # ======================================================================================================= #
@@ -456,29 +480,72 @@ def update_statsgraph_figure(group_selected, player_team_selected):
              filtered_player_df.loc['FT_PCT']])
         perc_stats_bar = go.Figure(data=[go.Bar(x=perc_stats_x,y=perc_stats_y,name=player_team_selected)])
 
+
+        #print('Player Shot Zone Relative to League Average Data')
+        player_zone_averages_df = generate_player_shotchart_averages(player_id, season)
+        #print(player_zone_averages_df)
+        # 1) Get league average data for this season
+        # league_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=0, season_nullable=season, season_type_all_star='Regular Season')
+        # league_shot_df = league_shot_data.get_data_frames()[1]
+        # print('League Shot Zone Average Data')
+        # print(league_shot_df)
+        # 2) Subtract League Average Data for this season from Player Data
         # Player shot chart detail
         player_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=player_id, season_nullable=season, season_type_all_star='Regular Season')
         player_shot_df = player_shot_data.get_data_frames()[0]
-        print('Player Shot Zone Average Data')
-        player_zone_averages_df = generate_player_shotchart_averages(player_shot_df)
-        print(player_zone_averages_df)
+        
         data_columns = ['SHOT_ZONE_BASIC','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y']
         filtered_player_shot_df = player_shot_df[data_columns]
-        print('RAW PLAYER SHOT DATA FRAME')
-        print(filtered_player_shot_df)
+        # print('RAW PLAYER SHOT DATA FRAME')
+        # print(filtered_player_shot_df)
         merged_df = pd.merge(filtered_player_shot_df, player_zone_averages_df,how='inner', on=['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA','SHOT_ZONE_RANGE'])
         print('MERGED DATA FRAME')
         print(merged_df)
-        xlocs = filtered_player_shot_df['LOC_X'].tolist()
-        ylocs = filtered_player_shot_df['LOC_Y'].tolist()
+        xlocs = merged_df['LOC_X'].tolist()
+        ylocs = merged_df['LOC_Y'].tolist()
+        shot_freq = merged_df['FREQ'].tolist()
+        shot_accur = merged_df['FG_PCT'].tolist()
+        #print(max(shot_freq))
         player_shot_chart = go.Figure()
         draw_plotly_court(player_shot_chart)
+        colorscale = 'RdYlBu_r'
+        marker_cmin = -0.05
+        marker_cmax = 0.05
+        ticktexts = ["Worse", "Average", "Better"]
+        hexbin_text = [
+            '<i>Accuracy: </i>' + str(round(shot_accur[i]*100, 1)) + '% (vs league avg)<BR>'
+            '<i>Frequency: </i>' + str(round(shot_freq [i]*100, 2)) + '%'
+            for i in range(len(shot_freq))
+            ]
         player_shot_chart.add_trace(go.Scatter(
-            x=xlocs, y=ylocs, mode='markers', name='markers',
+            x=xlocs, y=ylocs, mode='markers', name='markers', text=hexbin_text,
             marker=dict(
-                sizemode='area', sizemin=2.5,
+                size=shot_freq, sizemode='area', sizeref=2. * max(shot_freq, default=0) / (11. ** 2), sizemin=2.5,
                 line=dict(width=1, color='#333333'), symbol='hexagon',
+                color = shot_accur, colorscale = colorscale,
+                colorbar=dict(
+                    thickness=15,
+                    x=0.84,
+                    y=0.87,
+                    yanchor='middle',
+                    len=0.2,
+                    title=dict(
+                        text="<B>Accuracy</B>",
+                        font=dict(
+                            size=11,
+                            color='#4d4d4d'
+                        ),
+                    ),
+                    tickvals=[marker_cmin, (marker_cmin + marker_cmax) / 2, marker_cmax],
+                    ticktext=ticktexts,
+                    tickfont=dict(
+                        size=11,
+                        color='#4d4d4d'
+                    )
+                ),
+                cmin=marker_cmin, cmax=marker_cmax,
             ),
+            hoverinfo='text'
         ))
         return [
             html.Div(children='''
