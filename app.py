@@ -11,6 +11,7 @@ import plotly.graph_objects as go
 import plotly.express as px 
 import pandas as pd 
 import numpy as np
+import time
 
 # ==================================== SandBox Area ==================================================== #
 nba_teams = teams.get_teams()  # nba_teams is a list of dictionaries
@@ -314,6 +315,7 @@ def generate_player_shotchart_averages(player_id, season):
                             range_8_to_16, range_0_to_8, range_24]
 
     # Player shot chart detail
+    time.sleep(0.5)
     player_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=player_id, season_nullable=season, season_type_all_star='Regular Season')
     player_shot_chart_df = player_shot_data.get_data_frames()[0]
     
@@ -323,13 +325,7 @@ def generate_player_shotchart_averages(player_id, season):
     total_FGA = len(filtered_player_shot_df.index)
 
     # League Average Data
-    league_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=0, season_nullable=season, season_type_all_star='Regular Season')
-    filtered_league_shot_df = league_shot_data.get_data_frames()[1]
-    # print('INSIDE FUNCTION LEAGUE DATA')
-    # print(league_shot_df)
-    # filtered_league_shot_df = league_shot_df[[shot_zone_basic, shot_zone_area, shot_zone_range, fgp]]
-    print('League Average Data')
-    print(filtered_league_shot_df)
+    filtered_league_shot_df = player_shot_data.get_data_frames()[1]
 
     # ==============================    Generates Player Shot Chart Dataframe for all 20 shot zones   ==============================
     # Define columns for data frame
@@ -346,15 +342,15 @@ def generate_player_shotchart_averages(player_id, season):
         current_league_zone = filtered_league_shot_df.loc[(filtered_league_shot_df[shot_zone_basic] == shot_zone_basic_list[shot_zone_number])
                                                 & (filtered_league_shot_df[shot_zone_area] == shot_zone_area_list[shot_zone_number])
                                                 & (filtered_league_shot_df[shot_zone_range] == shot_zone_range_list[shot_zone_number])]
-        #print('Current League Zone FG%')
-        # print(current_league_zone)
+
         current_league_zone_AVG = current_league_zone.FG_PCT.tolist()
         if len(current_league_zone_AVG) > 0:
             current_league_zone_AVG = current_league_zone_AVG[0]
-        #print(current_league_zone_AVG)
+
         # Don't want to divide by 0
         if total_FGA != 0:
             current_player_zone_FREQ = current_player_zone_FGA/total_FGA
+        
         # Don't want to divide by 0
         if current_player_zone_FGA != 0:
             current_player_zone_AVG = (current_player_zone_FGM/current_player_zone_FGA)
@@ -364,8 +360,7 @@ def generate_player_shotchart_averages(player_id, season):
                              current_player_zone_relative_AVG,current_player_zone_FREQ, current_player_zone_AVG,
                              current_league_zone_AVG]
         final_df.loc[shot_zone_number] = current_player_zone_data
-    print('DATAFRAME RETURNED BY FUNCTION')
-    print(final_df)
+
     return final_df
 
 # ======================================================================================================= #
@@ -491,8 +486,8 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         data_columns = ['SHOT_ZONE_BASIC','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y']
         filtered_player_shot_df = player_shot_df[data_columns]
         merged_df = pd.merge(filtered_player_shot_df, player_zone_averages_df,how='inner', on=['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA','SHOT_ZONE_RANGE'])
-        print('MERGED DATA FRAME')
-        print(merged_df)
+        # print('MERGED DATA FRAME')
+        # print(merged_df)
         xlocs = merged_df['LOC_X'].tolist()
         ylocs = merged_df['LOC_Y'].tolist()
         shot_freq = merged_df['FREQ'].tolist()
