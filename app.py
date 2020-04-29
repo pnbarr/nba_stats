@@ -44,7 +44,7 @@ player_example = playercareerstats.PlayerCareerStats(player_id=nba_players[0]['i
 player_example_df = player_example.get_data_frames()[0]
 
 # Shot Chart Detail
-# league_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=0, season_nullable='2013-14', season_type_all_star='Regular Season')
+# league_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FG_PCT', team_id=0, player_id=0, season_nullable='1997-98', season_type_all_star='Regular Season')
 # league_shot_df = league_shot_data.get_data_frames()[1]
 # print('2013-14 League Shooting Averages')
 # print(league_shot_df)
@@ -264,6 +264,7 @@ def generate_player_shotchart_averages(player_id, season):
     shot_zone_range = 'SHOT_ZONE_RANGE'
     shot_attempted_flag = 'SHOT_ATTEMPTED_FLAG'
     shot_made_flag = 'SHOT_MADE_FLAG'
+    shot_distance = 'SHOT_DISTANCE'
     fgm = 'FGM'
     fga = 'FGA'
     rel_fgp = 'RELATIVE_FG_PCT'
@@ -320,8 +321,10 @@ def generate_player_shotchart_averages(player_id, season):
     player_shot_chart_df = player_shot_data.get_data_frames()[0]
     
     # Columns needed to calculate the above data
-    data_columns = [shot_zone_basic, shot_zone_area, shot_zone_range, shot_attempted_flag, shot_made_flag]
+    data_columns = [shot_zone_basic, shot_zone_area, shot_zone_range, shot_attempted_flag, shot_made_flag, shot_distance]
     filtered_player_shot_df = player_shot_chart_df[data_columns]
+    print('Filtered pLayer shot')
+    print(filtered_player_shot_df)
     total_FGA = len(filtered_player_shot_df.index)
 
     # League Average Data
@@ -329,7 +332,7 @@ def generate_player_shotchart_averages(player_id, season):
 
     # ==============================    Generates Player Shot Chart Dataframe for all 20 shot zones   ==============================
     # Define columns for data frame
-    final_df = pd.DataFrame(columns=[shot_zone_basic, shot_zone_area, shot_zone_range, fga, fgm, rel_fgp, fgf, player_fgp, league_fgp])
+    shot_zone_averages_df = pd.DataFrame(columns=[shot_zone_basic, shot_zone_area, shot_zone_range, fga, fgm, rel_fgp, fgf, player_fgp, league_fgp])
     for shot_zone_number in range(0, 20):
         current_player_zone = filtered_player_shot_df.loc[(filtered_player_shot_df[shot_zone_basic] == shot_zone_basic_list[shot_zone_number])
                                                 & (filtered_player_shot_df[shot_zone_area] == shot_zone_area_list[shot_zone_number])
@@ -359,9 +362,25 @@ def generate_player_shotchart_averages(player_id, season):
                              shot_zone_range_list[shot_zone_number], current_player_zone_FGA, current_player_zone_FGM,
                              current_player_zone_relative_AVG,current_player_zone_FREQ, current_player_zone_AVG,
                              current_league_zone_AVG]
-        final_df.loc[shot_zone_number] = current_player_zone_data
+        shot_zone_averages_df.loc[shot_zone_number] = current_player_zone_data
+    
+    # Generate  DataFrame containing FG% data relative to distance away from rim
+    distance_averages_df = pd.DataFrame(columns=[fgm, fga, shot_distance, player_fgp])
+    for distance_from_rim in range(0, 31):
+        current_player_distance = filtered_player_shot_df.loc[(filtered_player_shot_df[shot_distance] == distance_from_rim)]
+        current_player_distance_FGM = current_player_distance.SHOT_MADE_FLAG.sum()
+        current_player_distance_FGA = current_player_distance.SHOT_ATTEMPTED_FLAG.sum()
+        current_player_distance_AVG = 0
 
-    return final_df
+        # Don't want to divide by 0
+        if current_player_distance_FGA != 0:
+            current_player_distance_AVG = (current_player_distance_FGM/current_player_distance_FGA)
+        
+        current_player_distance_data = [current_player_distance_FGM, current_player_distance_FGA,
+                             distance_from_rim, current_player_distance_AVG]
+        distance_averages_df.loc[distance_from_rim] = current_player_distance_data
+
+    return shot_zone_averages_df, distance_averages_df
 
 # ======================================================================================================= #
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -480,7 +499,9 @@ def update_statsgraph_figure(group_selected, player_team_selected):
              filtered_player_df.loc['FT_PCT']])
         perc_stats_bar = go.Figure(data=[go.Bar(x=perc_stats_x,y=perc_stats_y,name=player_team_selected)])
         # Scatter plot for displaying shot chart data
-        player_zone_averages_df = generate_player_shotchart_averages(player_id, season)
+        player_zone_averages_df, player_distance_averages_df = generate_player_shotchart_averages(player_id, season)
+        print('Player Distance Averages')
+        print(player_distance_averages_df)
         player_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=player_id, season_nullable=season, season_type_all_star='Regular Season')
         player_shot_df = player_shot_data.get_data_frames()[0]
         data_columns = ['SHOT_ZONE_BASIC','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y']
