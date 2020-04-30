@@ -366,7 +366,7 @@ def generate_player_shotchart_averages(player_id, season):
     
     # Generate  DataFrame containing FG% data relative to distance away from rim
     distance_averages_df = pd.DataFrame(columns=[fgm, fga, shot_distance, player_fgp])
-    for distance_from_rim in range(0, 31):
+    for distance_from_rim in range(0, 36):
         current_player_distance = filtered_player_shot_df.loc[(filtered_player_shot_df[shot_distance] == distance_from_rim)]
         current_player_distance_FGM = current_player_distance.SHOT_MADE_FLAG.sum()
         current_player_distance_FGA = current_player_distance.SHOT_ATTEMPTED_FLAG.sum()
@@ -558,6 +558,9 @@ def update_statsgraph_figure(group_selected, player_team_selected):
             ),
             hoverinfo='text'
         ))
+
+        shot_distance_pct_fig = px.line(player_distance_averages_df, x="SHOT_DISTANCE", y="PLAYER_FG_PCT")
+
         return [
             html.Div(children='''
                                 Player Shot Chart Data
@@ -570,7 +573,17 @@ def update_statsgraph_figure(group_selected, player_team_selected):
                 dcc.Graph(figure=player_shot_chart), 
             ]
             ),
+            html.Div(children='''
+                                Player Shot Distance Data
+                               ''',
+                     style={
+                         'textAlign': 'center'
+                     }),
 
+            html.Div([
+                dcc.Graph(figure=shot_distance_pct_fig ), 
+            ]
+            ),
             html.Div(children='''
                                 Player Basic Bar Data
                                ''',
