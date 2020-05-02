@@ -265,6 +265,7 @@ def generate_player_shotchart_averages(player_id, season):
     shot_attempted_flag = 'SHOT_ATTEMPTED_FLAG'
     shot_made_flag = 'SHOT_MADE_FLAG'
     shot_distance = 'SHOT_DISTANCE'
+    period = 'PERIOD'
     fgm = 'FGM'
     fga = 'FGA'
     rel_fgp = 'RELATIVE_FG_PCT'
@@ -321,7 +322,7 @@ def generate_player_shotchart_averages(player_id, season):
     player_shot_chart_df = player_shot_data.get_data_frames()[0]
     
     # Columns needed to calculate the above data
-    data_columns = [shot_zone_basic, shot_zone_area, shot_zone_range, shot_attempted_flag, shot_made_flag, shot_distance]
+    data_columns = [shot_zone_basic, shot_zone_area, shot_zone_range, shot_attempted_flag, shot_made_flag, shot_distance, period]
     filtered_player_shot_df = player_shot_chart_df[data_columns]
     print('Filtered pLayer shot')
     print(filtered_player_shot_df)
@@ -380,7 +381,26 @@ def generate_player_shotchart_averages(player_id, season):
                              distance_from_rim, current_player_distance_AVG]
         distance_averages_df.loc[distance_from_rim] = current_player_distance_data
 
-    return shot_zone_averages_df, distance_averages_df
+    # Generate  DataFrame containing FG% data relative to period
+    quarters_averages_df = pd.DataFrame(columns=[fgm, fga, period, player_fgp])
+    for quarter in range(1, 5):
+        current_player_quarter = filtered_player_shot_df.loc[(filtered_player_shot_df[period] == quarter)]
+        print(current_player_quarter)
+        current_player_quarter_FGM = current_player_quarter.SHOT_MADE_FLAG.sum()
+        print(current_player_quarter_FGM)
+        print('Hi')
+        current_player_quarter_FGA = current_player_quarter.SHOT_ATTEMPTED_FLAG.sum()
+        current_player_quarter_AVG = 0
+
+        # Don't want to divide by 0
+        if current_player_quarter_FGA != 0:
+            current_player_quarter_AVG = (current_player_quarter_FGM/current_player_quarter_FGA)
+        
+        current_player_quarter_data = [current_player_quarter_FGM, current_player_quarter_FGA,
+                             quarter, current_player_quarter_AVG]
+        quarters_averages_df.loc[quarter] = current_player_quarter_data
+
+    return shot_zone_averages_df, distance_averages_df, quarters_averages_df
 
 # ======================================================================================================= #
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -499,9 +519,11 @@ def update_statsgraph_figure(group_selected, player_team_selected):
              filtered_player_df.loc['FT_PCT']])
         perc_stats_bar = go.Figure(data=[go.Bar(x=perc_stats_x,y=perc_stats_y,name=player_team_selected)])
         # Scatter plot for displaying shot chart data
-        player_zone_averages_df, player_distance_averages_df = generate_player_shotchart_averages(player_id, season)
+        player_zone_averages_df, player_distance_averages_df, player_quarters_averages_df = generate_player_shotchart_averages(player_id, season)
         print('Player Distance Averages')
         print(player_distance_averages_df)
+        print('Player quarters Averages')
+        print(player_quarters_averages_df)
         player_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=player_id, season_nullable=season, season_type_all_star='Regular Season')
         player_shot_df = player_shot_data.get_data_frames()[0]
         data_columns = ['SHOT_ZONE_BASIC','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y']
@@ -520,7 +542,7 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         colorscale = 'RdYlBu_r'
         marker_cmin = -0.05
         marker_cmax = 0.05
-        ticktexts = ["Worse", "Average", "Better"]
+        ticktexts = ["Below Average", "Average", "Above Average"]
         hexbin_text = [
             '<i>Relative Accuracy: </i>' + str(round(rel_shot_accur[i]*100, 1)) + '% (vs league avg)<BR>'
             '<i>Player Accuracy: </i>' + str(round(player_shot_accur[i]*100, 2)) + '% (player avg)<BR>'
@@ -560,6 +582,7 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         ))
 
         shot_distance_pct_fig = px.line(player_distance_averages_df, x="SHOT_DISTANCE", y="PLAYER_FG_PCT")
+        shot_period_pct_fig = px.line(player_quarters_averages_df, x="PERIOD", y="PLAYER_FG_PCT")
 
         return [
             html.Div(children='''
@@ -582,6 +605,17 @@ def update_statsgraph_figure(group_selected, player_team_selected):
 
             html.Div([
                 dcc.Graph(figure=shot_distance_pct_fig ), 
+            ]
+            ),
+            html.Div(children='''
+                                Player Shot Period Data
+                               ''',
+                     style={
+                         'textAlign': 'center'
+                     }),
+
+            html.Div([
+                dcc.Graph(figure=shot_period_pct_fig), 
             ]
             ),
             html.Div(children='''
