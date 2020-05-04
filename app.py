@@ -324,8 +324,6 @@ def generate_player_shotchart_averages(player_id, season):
     # Columns needed to calculate the above data
     data_columns = [shot_zone_basic, shot_zone_area, shot_zone_range, shot_attempted_flag, shot_made_flag, shot_distance, period]
     filtered_player_shot_df = player_shot_chart_df[data_columns]
-    print('Filtered pLayer shot')
-    print(filtered_player_shot_df)
     total_FGA = len(filtered_player_shot_df.index)
 
     # League Average Data
@@ -382,33 +380,35 @@ def generate_player_shotchart_averages(player_id, season):
         distance_averages_df.loc[distance_from_rim] = current_player_distance_data
 
     # Generate  DataFrame containing FG% data relative to period
-    quarters_averages_df = pd.DataFrame(columns=[shot_zone_basic, shot_zone_area, shot_zone_range, fgm, fga, period, player_fgp])
+    quarters_averages_df = pd.DataFrame(columns=[shot_zone_basic, shot_zone_area, shot_zone_range, fgm, fga, period, player_fgp, fgf])
     row_count = 0
     for quarter in range(1, 5):
+        current_quarter_total_FGA = 0
+        current_quarter_total_FGA = filtered_player_shot_df.loc[(filtered_player_shot_df[period] == quarter)].SHOT_ATTEMPTED_FLAG.sum()
         for shot_zone_number in range(0, 20):
             current_player_quarter = filtered_player_shot_df.loc[(filtered_player_shot_df[shot_zone_basic] == shot_zone_basic_list[shot_zone_number])
                                                             & (filtered_player_shot_df[shot_zone_area] == shot_zone_area_list[shot_zone_number])
                                                             & (filtered_player_shot_df[shot_zone_range] == shot_zone_range_list[shot_zone_number])
                                                             & (filtered_player_shot_df[period] == quarter)]
-            #current_player_quarter = filtered_player_shot_df.loc[(filtered_player_shot_df[period] == quarter)]
-            #print(current_player_quarter)
+
             current_player_quarter_FGM = current_player_quarter.SHOT_MADE_FLAG.sum()
-            #print(current_player_quarter_FGM)
-            #print('Hi')
             current_player_quarter_FGA = current_player_quarter.SHOT_ATTEMPTED_FLAG.sum()
+            current_player_quarter_FREQ = 0
             current_player_quarter_AVG = 0
 
+            # Don't want to divide by 0
+            if current_quarter_total_FGA != 0:
+                current_player_quarter_FREQ = current_player_quarter_FGA/current_quarter_total_FGA
+            
             # Don't want to divide by 0
             if current_player_quarter_FGA != 0:
                 current_player_quarter_AVG = (current_player_quarter_FGM/current_player_quarter_FGA)
         
             current_player_quarter_data = [shot_zone_basic_list[shot_zone_number], shot_zone_area_list[shot_zone_number],
                                            shot_zone_range_list[shot_zone_number], current_player_quarter_FGM, current_player_quarter_FGA,
-                                           quarter, current_player_quarter_AVG]
+                                           quarter, current_player_quarter_AVG, current_player_quarter_FREQ]
             quarters_averages_df.loc[row_count] = current_player_quarter_data
             row_count+=1
-    print("FINISHED QUARTERS DATA")
-    print(quarters_averages_df)
 
     return shot_zone_averages_df, distance_averages_df, quarters_averages_df
 
@@ -528,18 +528,14 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         perc_stats_y = np.multiply(100, [filtered_player_df.loc['FG_PCT'],filtered_player_df.loc['FG3_PCT'],
              filtered_player_df.loc['FT_PCT']])
         perc_stats_bar = go.Figure(data=[go.Bar(x=perc_stats_x,y=perc_stats_y,name=player_team_selected)])
-        # Scatter plot for displaying shot chart data
+        
+        # Scatter plot for displaying season shot chart data
         player_zone_averages_df, player_distance_averages_df, player_quarters_averages_df = generate_player_shotchart_averages(player_id, season)
-        print('Player Zone Averages')
-        print(player_zone_averages_df)
-
         player_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=0, player_id=player_id, season_nullable=season, season_type_all_star='Regular Season')
         player_shot_df = player_shot_data.get_data_frames()[0]
         data_columns = ['SHOT_ZONE_BASIC','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y','PERIOD']
         filtered_player_shot_df = player_shot_df[data_columns]
         season_merged_df = pd.merge(filtered_player_shot_df, player_zone_averages_df,how='inner', on=['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA','SHOT_ZONE_RANGE'])
-        print('Merged Player zone season averages')
-        print(season_merged_df)
         season_xlocs = season_merged_df['LOC_X'].tolist()
         season_ylocs = season_merged_df['LOC_Y'].tolist()
         season_shot_freq = season_merged_df['FREQ'].tolist()
@@ -590,38 +586,201 @@ def update_statsgraph_figure(group_selected, player_team_selected):
             hoverinfo='text'
         ))
 
-        print('Player quarters Averages')
-        print(player_quarters_averages_df)
-        #first_quarter_merged_df = player_quarters_averages_df.loc[(player_quarters_averages_df['PERIOD'] == 2)]
-        print('Filter Player Shot')
-        print(filtered_player_shot_df)
+        # Scatter plot for displaying season 1st quarter shot chart data
         first_quarter_averages_df = player_quarters_averages_df.loc[(player_quarters_averages_df['PERIOD'] == 1)]
-        print('First Quarter Shot Data')
-        print(first_quarter_averages_df)
-        quarters_merged_df = pd.merge(filtered_player_shot_df, first_quarter_averages_df,how='inner', on=['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA','SHOT_ZONE_RANGE','PERIOD'])
-        #first_quarter_merged_df = quarters_merged_df.loc[(quarters_merged_df['PERIOD'] == 1)]
-        print('1ST QUARTER MERGED DATA FRAME')
-        print(quarters_merged_df)
-        quarters_xlocs = quarters_merged_df['LOC_X'].tolist()
-        quarters_ylocs = quarters_merged_df['LOC_Y'].tolist()
-        quarter_shot = quarters_merged_df['PERIOD'].tolist()
-        quarters_player_shot_accur = quarters_merged_df['PLAYER_FG_PCT'].tolist()
-        quarters_player_shot_chart = go.Figure()
-        draw_plotly_court(quarters_player_shot_chart)
+        first_quarter_merged_df = pd.merge(filtered_player_shot_df, first_quarter_averages_df,how='inner', on=['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA','SHOT_ZONE_RANGE','PERIOD'])
+        first_quarter_xlocs = first_quarter_merged_df['LOC_X'].tolist()
+        first_quarter_ylocs = first_quarter_merged_df['LOC_Y'].tolist()
+        first_quarter_shot_FGM = first_quarter_merged_df['FGM'].tolist()
+        first_quarter_shot_FGA = first_quarter_merged_df['FGA'].tolist()
+        first_quarter_shot_freq = first_quarter_merged_df['FREQ'].tolist()
+        first_quarter_shot = first_quarter_merged_df['PERIOD'].tolist()
+        first_quarter_player_shot_accur = first_quarter_merged_df['PLAYER_FG_PCT'].tolist()
+        first_quarter_player_shot_chart = go.Figure()
+        draw_plotly_court(first_quarter_player_shot_chart)
         colorscale = 'RdYlBu_r'
         marker_cmin = 0.2
         marker_cmax = 0.6
         ticktexts = ["Below 40%", "40%", "Above 40%"]
         hexbin_text = [
-            '<i>Player Accuracy: </i>' + str(round(quarters_player_shot_accur[i]*100, 1)) + '% (player avg)<BR>'
-            '<i>Period Taken: </i>' + str(round(quarter_shot[i], 2)) + ' (period taken)<BR>'
-            for i in range(len(quarters_xlocs))
+            '<i>Player Accuracy: </i>' + str(round(first_quarter_player_shot_accur[i]*100, 1)) + '% (player avg)<BR>'
+            '<i>Period Taken: </i>' + str(round(first_quarter_shot[i], 2)) + ' (period taken)<BR>'
+            '<i>Field Goals Made: </i>' + str(round(first_quarter_shot_FGM[i], 3)) + ' (FGM)<BR>'
+            '<i>Field Goals Attempted: </i>' + str(round(first_quarter_shot_FGA[i], 4)) + ' (FGA)<BR>'
+            '<i>Frequency: </i>' + str(round(first_quarter_shot_freq [i]*100, 5)) + '% (taken in 1st quarter)'
+            for i in range(len(first_quarter_xlocs))
             ]
-        quarters_player_shot_chart.add_trace(go.Scatter(
-            x=quarters_xlocs, y=quarters_ylocs, mode='markers', name='markers', text=hexbin_text,
+        first_quarter_player_shot_chart.add_trace(go.Scatter(
+            x=first_quarter_xlocs, y=first_quarter_ylocs, mode='markers', name='markers', text=hexbin_text,
             marker=dict(
+                size=first_quarter_shot_freq, sizemode='area', sizeref=2. * max(first_quarter_shot_freq, default=0) / (11. ** 2), sizemin=2.5,
                 line=dict(width=1, color='#333333'), symbol='hexagon',
-                color = quarters_player_shot_accur , colorscale = colorscale,
+                color = first_quarter_player_shot_accur , colorscale = colorscale,
+                colorbar=dict(
+                    thickness=15,
+                    x=0.84,
+                    y=0.87,
+                    yanchor='middle',
+                    len=0.2,
+                    title=dict(
+                        text="<B>Accuracy</B>",
+                        font=dict(
+                            size=11,
+                            color='#4d4d4d'
+                        ),
+                    ),
+                    tickvals=[marker_cmin, (marker_cmin + marker_cmax) / 2, marker_cmax],
+                    ticktext=ticktexts,
+                    tickfont=dict(
+                        size=11,
+                        color='#4d4d4d'
+                    )
+                ),
+                cmin=marker_cmin, cmax=marker_cmax,
+            ),
+            hoverinfo='text'
+        ))
+
+        # Scatter plot for displaying season 2nd quarter shot chart data
+        second_quarter_averages_df = player_quarters_averages_df.loc[(player_quarters_averages_df['PERIOD'] == 2)]
+        second_quarter_merged_df = pd.merge(filtered_player_shot_df, second_quarter_averages_df,how='inner', on=['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA','SHOT_ZONE_RANGE','PERIOD'])
+        second_quarter_xlocs = second_quarter_merged_df['LOC_X'].tolist()
+        second_quarter_ylocs = second_quarter_merged_df['LOC_Y'].tolist()
+        second_quarter_shot_FGM = second_quarter_merged_df['FGM'].tolist()
+        second_quarter_shot_FGA = second_quarter_merged_df['FGA'].tolist()
+        second_quarter_shot_freq = second_quarter_merged_df['FREQ'].tolist()
+        second_quarter_shot = second_quarter_merged_df['PERIOD'].tolist()
+        second_quarter_player_shot_accur = second_quarter_merged_df['PLAYER_FG_PCT'].tolist()
+        second_quarter_player_shot_chart = go.Figure()
+        draw_plotly_court(second_quarter_player_shot_chart)
+        colorscale = 'RdYlBu_r'
+        marker_cmin = 0.2
+        marker_cmax = 0.6
+        ticktexts = ["Below 40%", "40%", "Above 40%"]
+        hexbin_text = [
+            '<i>Player Accuracy: </i>' + str(round(second_quarter_player_shot_accur[i]*100, 1)) + '% (player avg)<BR>'
+            '<i>Period Taken: </i>' + str(round(second_quarter_shot[i], 2)) + ' (period taken)<BR>'
+            '<i>Field Goals Made: </i>' + str(round(second_quarter_shot_FGM[i], 3)) + ' (FGM)<BR>'
+            '<i>Field Goals Attempted: </i>' + str(round(second_quarter_shot_FGA[i], 4)) + ' (FGA)<BR>'
+            '<i>Frequency: </i>' + str(round(second_quarter_shot_freq [i]*100, 5)) + '% (taken in 2nd quarter)'
+            for i in range(len(second_quarter_xlocs))
+            ]
+        second_quarter_player_shot_chart.add_trace(go.Scatter(
+            x=second_quarter_xlocs, y=second_quarter_ylocs, mode='markers', name='markers', text=hexbin_text,
+            marker=dict(
+                size=second_quarter_shot_freq, sizemode='area', sizeref=2. * max(second_quarter_shot_freq, default=0) / (11. ** 2), sizemin=2.5,
+                line=dict(width=1, color='#333333'), symbol='hexagon',
+                color = second_quarter_player_shot_accur , colorscale = colorscale,
+                colorbar=dict(
+                    thickness=15,
+                    x=0.84,
+                    y=0.87,
+                    yanchor='middle',
+                    len=0.2,
+                    title=dict(
+                        text="<B>Accuracy</B>",
+                        font=dict(
+                            size=11,
+                            color='#4d4d4d'
+                        ),
+                    ),
+                    tickvals=[marker_cmin, (marker_cmin + marker_cmax) / 2, marker_cmax],
+                    ticktext=ticktexts,
+                    tickfont=dict(
+                        size=11,
+                        color='#4d4d4d'
+                    )
+                ),
+                cmin=marker_cmin, cmax=marker_cmax,
+            ),
+            hoverinfo='text'
+        ))
+
+        # Scatter plot for displaying season 3rd quarter shot chart data
+        third_quarter_averages_df = player_quarters_averages_df.loc[(player_quarters_averages_df['PERIOD'] == 3)]
+        third_quarter_merged_df = pd.merge(filtered_player_shot_df, third_quarter_averages_df,how='inner', on=['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA','SHOT_ZONE_RANGE','PERIOD'])
+        third_quarter_xlocs = third_quarter_merged_df['LOC_X'].tolist()
+        third_quarter_ylocs = third_quarter_merged_df['LOC_Y'].tolist()
+        third_quarter_shot_FGM = third_quarter_merged_df['FGM'].tolist()
+        third_quarter_shot_FGA = third_quarter_merged_df['FGA'].tolist()
+        third_quarter_shot_freq = third_quarter_merged_df['FREQ'].tolist()
+        third_quarter_shot = third_quarter_merged_df['PERIOD'].tolist()
+        third_quarter_player_shot_accur = third_quarter_merged_df['PLAYER_FG_PCT'].tolist()
+        third_quarter_player_shot_chart = go.Figure()
+        draw_plotly_court(third_quarter_player_shot_chart)
+        colorscale = 'RdYlBu_r'
+        marker_cmin = 0.2
+        marker_cmax = 0.6
+        ticktexts = ["Below 40%", "40%", "Above 40%"]
+        hexbin_text = [
+            '<i>Player Accuracy: </i>' + str(round(third_quarter_player_shot_accur[i]*100, 1)) + '% (player avg)<BR>'
+            '<i>Period Taken: </i>' + str(round(third_quarter_shot[i], 2)) + ' (period taken)<BR>'
+            '<i>Field Goals Made: </i>' + str(round(third_quarter_shot_FGM[i], 3)) + ' (FGM)<BR>'
+            '<i>Field Goals Attempted: </i>' + str(round(third_quarter_shot_FGA[i], 4)) + ' (FGA)<BR>'
+            '<i>Frequency: </i>' + str(round(third_quarter_shot_freq [i]*100, 5)) + '% (taken in 3rd quarter)'
+            for i in range(len(third_quarter_xlocs))
+            ]
+        third_quarter_player_shot_chart.add_trace(go.Scatter(
+            x=third_quarter_xlocs, y=third_quarter_ylocs, mode='markers', name='markers', text=hexbin_text,
+            marker=dict(
+                size=third_quarter_shot_freq, sizemode='area', sizeref=2. * max(third_quarter_shot_freq, default=0) / (11. ** 2), sizemin=2.5,
+                line=dict(width=1, color='#333333'), symbol='hexagon',
+                color = third_quarter_player_shot_accur , colorscale = colorscale,
+                colorbar=dict(
+                    thickness=15,
+                    x=0.84,
+                    y=0.87,
+                    yanchor='middle',
+                    len=0.2,
+                    title=dict(
+                        text="<B>Accuracy</B>",
+                        font=dict(
+                            size=11,
+                            color='#4d4d4d'
+                        ),
+                    ),
+                    tickvals=[marker_cmin, (marker_cmin + marker_cmax) / 2, marker_cmax],
+                    ticktext=ticktexts,
+                    tickfont=dict(
+                        size=11,
+                        color='#4d4d4d'
+                    )
+                ),
+                cmin=marker_cmin, cmax=marker_cmax,
+            ),
+            hoverinfo='text'
+        ))
+
+        # Scatter plot for displaying season 4th quarter shot chart data
+        fourth_quarter_averages_df = player_quarters_averages_df.loc[(player_quarters_averages_df['PERIOD'] == 4)]
+        fourth_quarter_merged_df = pd.merge(filtered_player_shot_df, fourth_quarter_averages_df,how='inner', on=['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA','SHOT_ZONE_RANGE','PERIOD'])
+        fourth_quarter_xlocs = fourth_quarter_merged_df['LOC_X'].tolist()
+        fourth_quarter_ylocs = fourth_quarter_merged_df['LOC_Y'].tolist()
+        fourth_quarter_shot_FGM = fourth_quarter_merged_df['FGM'].tolist()
+        fourth_quarter_shot_FGA = fourth_quarter_merged_df['FGA'].tolist()
+        fourth_quarter_shot_freq = fourth_quarter_merged_df['FREQ'].tolist()
+        fourth_quarter_shot = fourth_quarter_merged_df['PERIOD'].tolist()
+        fourth_quarter_player_shot_accur = fourth_quarter_merged_df['PLAYER_FG_PCT'].tolist()
+        fourth_quarter_player_shot_chart = go.Figure()
+        draw_plotly_court(fourth_quarter_player_shot_chart)
+        colorscale = 'RdYlBu_r'
+        marker_cmin = 0.2
+        marker_cmax = 0.6
+        ticktexts = ["Below 40%", "40%", "Above 40%"]
+        hexbin_text = [
+            '<i>Player Accuracy: </i>' + str(round(fourth_quarter_player_shot_accur[i]*100, 1)) + '% (player avg)<BR>'
+            '<i>Period Taken: </i>' + str(round(fourth_quarter_shot[i], 2)) + ' (period taken)<BR>'
+            '<i>Field Goals Made: </i>' + str(round(fourth_quarter_shot_FGM[i], 3)) + ' (FGM)<BR>'
+            '<i>Field Goals Attempted: </i>' + str(round(fourth_quarter_shot_FGA[i], 4)) + ' (FGA)<BR>'
+            '<i>Frequency: </i>' + str(round(fourth_quarter_shot_freq [i]*100, 5)) + '% (taken in 4th quarter)'
+            for i in range(len(fourth_quarter_xlocs))
+            ]
+        fourth_quarter_player_shot_chart.add_trace(go.Scatter(
+            x=fourth_quarter_xlocs, y=fourth_quarter_ylocs, mode='markers', name='markers', text=hexbin_text,
+            marker=dict(
+                size=fourth_quarter_shot_freq, sizemode='area', sizeref=2. * max(fourth_quarter_shot_freq, default=0) / (11. ** 2), sizemin=2.5,
+                line=dict(width=1, color='#333333'), symbol='hexagon',
+                color = fourth_quarter_player_shot_accur , colorscale = colorscale,
                 colorbar=dict(
                     thickness=15,
                     x=0.84,
@@ -669,7 +828,40 @@ def update_statsgraph_figure(group_selected, player_team_selected):
                      }),
 
             html.Div([
-                dcc.Graph(figure=quarters_player_shot_chart), 
+                dcc.Graph(figure=first_quarter_player_shot_chart), 
+            ]
+            ),
+            html.Div(children='''
+                                Player Shot Chart 2nd Quarter Data
+                               ''',
+                     style={
+                         'textAlign': 'center'
+                     }),
+
+            html.Div([
+                dcc.Graph(figure=second_quarter_player_shot_chart), 
+            ]
+            ),
+            html.Div(children='''
+                                Player Shot Chart 3rd Quarter Data
+                               ''',
+                     style={
+                         'textAlign': 'center'
+                     }),
+
+            html.Div([
+                dcc.Graph(figure=third_quarter_player_shot_chart), 
+            ]
+            ),
+                        html.Div(children='''
+                                Player Shot Chart 4th Quarter Data
+                               ''',
+                     style={
+                         'textAlign': 'center'
+                     }),
+
+            html.Div([
+                dcc.Graph(figure=fourth_quarter_player_shot_chart), 
             ]
             ),
             html.Div(children='''
