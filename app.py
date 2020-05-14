@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import dash
+import matplotlib
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
@@ -12,6 +13,7 @@ import plotly.express as px
 import pandas as pd 
 import numpy as np
 import time
+
 
 # ==================================== SandBox Area ==================================================== #
 nba_teams = teams.get_teams()  # nba_teams is a list of dictionaries
@@ -38,6 +40,8 @@ nba_players = players.get_players()  # nba_players is a list of dictionaries
 
 team_example = teamyearbyyearstats.TeamYearByYearStats(team_id=nba_teams[0]['id'])
 team_example_df = team_example.get_data_frames()[0]
+# team_example_year_df = team_example_df.loc[(team_example_df['YEAR'] == '2018-19')]
+# print(team_example_year_df)
 
 # Function should take a year season as an input and return list of players who played that year
 player_example = playercareerstats.PlayerCareerStats(player_id=nba_players[0]['id'])
@@ -607,8 +611,12 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         team_zone_averages_df = generate_team_shotchart_averages(team_id, selected_year)
         team_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=team_id, player_id=0, season_nullable=selected_year, season_type_all_star='Regular Season')
         team_shot_df = team_shot_data.get_data_frames()[0]
-        data_columns = ['SHOT_ZONE_BASIC','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y','PERIOD']
+        print('Raw Team Data')
+        print(team_shot_df)
+        data_columns = ['SHOT_ZONE_BASIC','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y','PERIOD','SHOT_MADE_FLAG']
         filtered_team_shot_df = team_shot_df[data_columns]
+        print('Filtered Team Data')
+        print(filtered_team_shot_df)
         season_merged_df = pd.merge(filtered_team_shot_df, team_zone_averages_df,how='inner', on=['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA','SHOT_ZONE_RANGE'])
         season_xlocs = season_merged_df['LOC_X'].tolist()
         season_ylocs = season_merged_df['LOC_Y'].tolist()
@@ -659,6 +667,14 @@ def update_statsgraph_figure(group_selected, player_team_selected):
             ),
             hoverinfo='text'
         ))
+
+        team_example = teamyearbyyearstats.TeamYearByYearStats(team_id=team_id)
+        team_example_df = team_example.get_data_frames()[0]
+        team_example_year_df = team_example_df.loc[(team_example_df['YEAR'] == selected_year)]
+        data_columns = ['FGM','FGA','FG_PCT','FG3M','FG3A','FG3_PCT','FTM','FTA','FT_PCT','PTS']
+        filtered_team_df = team_example_year_df[data_columns]
+        print(filtered_team_df)
+
         return [
             html.Div(children='''
                                 Team Shot Chart Data
@@ -668,20 +684,15 @@ def update_statsgraph_figure(group_selected, player_team_selected):
                      }),
 
             html.Div([
-                dcc.Graph(figure=season_team_shot_chart), 
-            ]
-            ),
-            html.Div([
-                dcc.Graph(figure=record_pie),
-            ]
-            ),
-            html.Div(children='''
-                                Standard Team Data
-                               ''',
-                     style={
-                         'textAlign': 'center'
-                     }),
-            dcc.Graph(figure=basic_bar)
+                html.Div([
+                    dcc.Graph(figure=season_team_shot_chart)
+                ], className="six columns"),
+
+                html.Div([
+                    dcc.Graph(figure=record_pie),
+                    dcc.Graph(figure=basic_bar),
+                ], className="six columns"),
+        ], className="row")
         ]
 
     else:  # Put player logic here
