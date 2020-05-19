@@ -645,7 +645,7 @@ def update_statsgraph_figure(group_selected, player_team_selected):
                 color = season_rel_shot_accur, colorscale = colorscale,
                 colorbar=dict(
                     thickness=15,
-                    x=0.84,
+                    x=0.75,
                     y=0.87,
                     yanchor='middle',
                     len=0.2,
@@ -673,6 +673,12 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         team_example_year_df = team_example_df.loc[(team_example_df['YEAR'] == selected_year)]
         data_columns = ['FGM','FGA','FG_PCT','FG3M','FG3A','FG3_PCT','FTM','FTA','FT_PCT','PTS']
         filtered_team_df = team_example_year_df[data_columns]
+        #season_shot_freq = season_merged_df['FREQ'].tolist()
+        total_points = filtered_team_df['PTS'].tolist()
+        total_FG3_points = filtered_team_df['FG3M'].tolist()[0] * 3
+        print(total_FG3_points)
+        total_FG2_points = total_points[0] - total_FG3_points
+        total_FT_points = filtered_team_df['FTM'].tolist()
         print(filtered_team_df)
 
         return [
@@ -689,6 +695,32 @@ def update_statsgraph_figure(group_selected, player_team_selected):
                 ], className="six columns"),
 
                 html.Div([
+                    html.Div(
+                        [
+                            html.Div(
+                                [html.H6(id="total_points",children=total_points), html.P("Totals Points")],
+                                id="total_points",
+                                className="mini_container",
+                            ),
+                            html.Div(
+                                [html.H6(id="total_FG2_points",children=total_FG2_points), html.P("Total Points from 2PT FG")],
+                                id="total_FG2_points",
+                                className="mini_container",
+                            ),
+                            html.Div(
+                                [html.H6(id="total_FG3_points",children=total_FG3_points), html.P("Total Points from 3PT FG")],
+                                id="total_FG3_points",
+                                className="mini_container",
+                            ),
+                            html.Div(
+                                [html.H6(id="total_FT_points",children=total_FT_points), html.P("Total Points from FT")],
+                                id="total_FT_points",
+                                className="mini_container",
+                            ),
+                        ],
+                        id="info-container",
+                        className="row container-display",
+                    ),
                     dcc.Graph(figure=record_pie),
                     dcc.Graph(figure=basic_bar),
                 ], className="six columns"),
