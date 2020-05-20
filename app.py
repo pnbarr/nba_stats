@@ -673,13 +673,24 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         team_example_year_df = team_example_df.loc[(team_example_df['YEAR'] == selected_year)]
         data_columns = ['FGM','FGA','FG_PCT','FG3M','FG3A','FG3_PCT','FTM','FTA','FT_PCT','PTS']
         filtered_team_df = team_example_year_df[data_columns]
-        #season_shot_freq = season_merged_df['FREQ'].tolist()
-        total_points = filtered_team_df['PTS'].tolist()
-        total_FG3_points = filtered_team_df['FG3M'].tolist()[0] * 3
+        # Point Totals Data
+        total_points = filtered_team_df.iloc[0]['PTS']
+        total_FG3_points = filtered_team_df.iloc[0]['FG3M'] * 3
         print(total_FG3_points)
-        total_FG2_points = total_points[0] - total_FG3_points
-        total_FT_points = filtered_team_df['FTM'].tolist()
+        total_FG2_points = total_points - total_FG3_points
+        total_FT_points = filtered_team_df.iloc[0]['FTM']
         print(filtered_team_df)
+        # Shooting Percentages Data
+        # EFG = (FGM + 0.5*FG3M)/FGA
+        fgm = filtered_team_df.iloc[0]['FGM']
+        fga = filtered_team_df.iloc[0]['FGA']
+        fg3m = filtered_team_df.iloc[0]['FG3M']
+        fg3a = filtered_team_df.iloc[0]['FG3A']
+        efg_perc = round(((fgm + 0.5*fg3m)/fga) * 100, 2)
+        fg_perc = round(filtered_team_df.iloc[0]['FG_PCT'] * 100,2)
+        fg2_perc = round(((fgm-fg3m)/(fga-fg3a)) * 100,2)
+        fg3_perc = round(filtered_team_df.iloc[0]['FG3_PCT'] * 100, 2)
+        ft_perc = round(filtered_team_df.iloc[0]['FT_PCT'] * 100, 2)
 
         return [
             html.Div(children='''
@@ -698,7 +709,7 @@ def update_statsgraph_figure(group_selected, player_team_selected):
                     html.Div(
                         [
                             html.Div(
-                                [html.H6(id="total_points",children=total_points), html.P("Totals Points")],
+                                [html.H6(id="total_points",children=total_points), html.P("Total Points")],
                                 id="total_points",
                                 className="mini_container",
                             ),
@@ -715,6 +726,32 @@ def update_statsgraph_figure(group_selected, player_team_selected):
                             html.Div(
                                 [html.H6(id="total_FT_points",children=total_FT_points), html.P("Total Points from FT")],
                                 id="total_FT_points",
+                                className="mini_container",
+                            ),
+                        ],
+                        id="info-container",
+                        className="row container-display",
+                    ),
+                    html.Div(
+                        [
+                            html.Div(
+                                [html.H6(id="fg",children=fg_perc), html.P("FG%")],
+                                id="fg",
+                                className="mini_container",
+                            ),
+                            html.Div(
+                                [html.H6(id="fg2",children=fg2_perc), html.P("2-PT FG%")],
+                                id="fg2",
+                                className="mini_container",
+                            ),
+                            html.Div(
+                                [html.H6(id="fg3",children=fg3_perc), html.P("3-PT FG%")],
+                                id="fg3",
+                                className="mini_container",
+                            ),
+                            html.Div(
+                                [html.H6(id="ftp",children=ft_perc), html.P("FT%")],
+                                id="ftp",
                                 className="mini_container",
                             ),
                         ],
