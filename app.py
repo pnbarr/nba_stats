@@ -671,14 +671,14 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         team_example = teamyearbyyearstats.TeamYearByYearStats(team_id=team_id)
         team_example_df = team_example.get_data_frames()[0]
         team_example_year_df = team_example_df.loc[(team_example_df['YEAR'] == selected_year)]
-        data_columns = ['FGM','FGA','FG_PCT','FG3M','FG3A','FG3_PCT','FTM','FTA','FT_PCT','PTS']
+        data_columns = ['FGM','FGA','FG_PCT','FG3M','FG3A','FG3_PCT','FTM','FTA','FT_PCT','PTS','WIN_PCT','CONF_RANK','DIV_RANK','PTS_RANK']
         filtered_team_df = team_example_year_df[data_columns]
         # Point Totals Data
         total_points = filtered_team_df.iloc[0]['PTS']
         total_FG3_points = filtered_team_df.iloc[0]['FG3M'] * 3
         print(total_FG3_points)
-        total_FG2_points = total_points - total_FG3_points
         total_FT_points = filtered_team_df.iloc[0]['FTM']
+        total_FG2_points = total_points - total_FG3_points - total_FT_points
         print(filtered_team_df)
         # Shooting Percentages Data
         # EFG = (FGM + 0.5*FG3M)/FGA
@@ -691,7 +691,11 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         fg2_perc = round(((fgm-fg3m)/(fga-fg3a)) * 100,2)
         fg3_perc = round(filtered_team_df.iloc[0]['FG3_PCT'] * 100, 2)
         ft_perc = round(filtered_team_df.iloc[0]['FT_PCT'] * 100, 2)
-
+        # Team Performance Metrics
+        win_pct = filtered_team_df.iloc[0]['WIN_PCT']
+        conf_rank = filtered_team_df.iloc[0]['CONF_RANK']
+        div_rank = filtered_team_df.iloc[0]['DIV_RANK']
+        pts_rank = filtered_team_df.iloc[0]['PTS_RANK']
         return [
             html.Div(children='''
                                 Team Shot Chart Data
@@ -706,6 +710,32 @@ def update_statsgraph_figure(group_selected, player_team_selected):
                 ], className="six columns"),
 
                 html.Div([
+                    html.Div(
+                        [
+                            html.Div(
+                                [html.H6(id="win_pct",children=win_pct), html.P("Win%")],
+                                id="win_pct",
+                                className="mini_container",
+                            ),
+                            html.Div(
+                                [html.H6(id="conf_rank",children=conf_rank), html.P("Conference Rank")],
+                                id="conf_rank",
+                                className="mini_container",
+                            ),
+                            html.Div(
+                                [html.H6(id="div_rank",children=div_rank), html.P("Division Rank")],
+                                id="div_rank",
+                                className="mini_container",
+                            ),
+                            html.Div(
+                                [html.H6(id="pts_rank",children=pts_rank), html.P("Points Rank")],
+                                id="pts_rank",
+                                className="mini_container",
+                            ),
+                        ],
+                        id="info-container",
+                        className="row container-display",
+                    ),
                     html.Div(
                         [
                             html.Div(
