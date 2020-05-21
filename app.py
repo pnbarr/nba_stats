@@ -692,7 +692,7 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         fg3_perc = round(filtered_team_df.iloc[0]['FG3_PCT'] * 100, 2)
         ft_perc = round(filtered_team_df.iloc[0]['FT_PCT'] * 100, 2)
         # Team Performance Metrics
-        win_pct = filtered_team_df.iloc[0]['WIN_PCT']
+        win_pct = round(filtered_team_df.iloc[0]['WIN_PCT'],2)
         conf_rank = filtered_team_df.iloc[0]['CONF_RANK']
         div_rank = filtered_team_df.iloc[0]['DIV_RANK']
         pts_rank = filtered_team_df.iloc[0]['PTS_RANK']
