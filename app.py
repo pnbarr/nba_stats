@@ -536,7 +536,7 @@ group_options = ['Team', 'Player']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.layout = html.Div(children=[
-    html.H1(children='Welcome to NBA Stats', style={
+    html.H1(children='Welcome to NBA Shooting Trends', style={
         'textAlign':'center'
     }),
 
@@ -723,7 +723,7 @@ def update_statsgraph_figure(group_selected, player_team_selected, year_selected
         team_example = teamyearbyyearstats.TeamYearByYearStats(team_id=team_id)
         team_example_df = team_example.get_data_frames()[0]
         team_example_year_df = team_example_df.loc[(team_example_df['YEAR'] == selected_year)]
-        data_columns = ['FGM','FGA','FG_PCT','FG3M','FG3A','FG3_PCT','FTM','FTA','FT_PCT','PTS','WIN_PCT','CONF_RANK','DIV_RANK','PTS_RANK']
+        data_columns = ['FGM','FGA','FG_PCT','FG3M','FG3A','FG3_PCT','FTM','FTA','FT_PCT','PTS','WINS','LOSSES','CONF_RANK','DIV_RANK','PTS_RANK']
         filtered_team_df = team_example_year_df[data_columns]
         # Point Totals Data
         total_points = filtered_team_df.iloc[0]['PTS']
@@ -736,13 +736,17 @@ def update_statsgraph_figure(group_selected, player_team_selected, year_selected
         fga = filtered_team_df.iloc[0]['FGA']
         fg3m = filtered_team_df.iloc[0]['FG3M']
         fg3a = filtered_team_df.iloc[0]['FG3A']
+        fg2a = fga - fg3a
+        fta = filtered_team_df.iloc[0]['FTA']
         #efg_perc = round(((fgm + 0.5*fg3m)/fga) * 100, 2)
         fg_perc = round(filtered_team_df.iloc[0]['FG_PCT'] * 100,2)
         fg2_perc = round(((fgm-fg3m)/(fga-fg3a)) * 100,2)
         fg3_perc = round(filtered_team_df.iloc[0]['FG3_PCT'] * 100, 2)
         ft_perc = round(filtered_team_df.iloc[0]['FT_PCT'] * 100, 2)
         # Team Performance Metrics
-        win_pct = round(filtered_team_df.iloc[0]['WIN_PCT'],2)
+        wins = int(filtered_team_df.iloc[0]['WINS'])
+        losses = int(filtered_team_df.iloc[0]['LOSSES'])
+        record = str(wins) + '-' + str(losses)
         conf_rank = filtered_team_df.iloc[0]['CONF_RANK']
         div_rank = filtered_team_df.iloc[0]['DIV_RANK']
         pts_rank = filtered_team_df.iloc[0]['PTS_RANK']
@@ -763,7 +767,7 @@ def update_statsgraph_figure(group_selected, player_team_selected, year_selected
                     html.Div(
                         [
                             html.Div(
-                                [html.H6(id="win_pct",children=win_pct), html.P("Win%")],
+                                [html.H6(id="win_pct",children=record), html.P("Record")],
                                 id="win_pct",
                                 className="mini_container",
                             ),
@@ -780,6 +784,32 @@ def update_statsgraph_figure(group_selected, player_team_selected, year_selected
                             html.Div(
                                 [html.H6(id="pts_rank",children=pts_rank), html.P("Points Rank")],
                                 id="pts_rank",
+                                className="mini_container",
+                            ),
+                        ],
+                        id="info-container",
+                        className="row container-display",
+                    ),
+                    html.Div(
+                        [
+                            html.Div(
+                                [html.H6(id="total_fga",children=fga), html.P("Total FGA")],
+                                id="total_fga",
+                                className="mini_container",
+                            ),
+                            html.Div(
+                                [html.H6(id="total_FG2_fga",children=fg2a), html.P("Total 2PT FGA")],
+                                id="total_FG2_fga",
+                                className="mini_container",
+                            ),
+                            html.Div(
+                                [html.H6(id="total_FG3_fga",children=fg3a), html.P("Total 3PT FGA")],
+                                id="total_FG3_fga",
+                                className="mini_container",
+                            ),
+                            html.Div(
+                                [html.H6(id="total_FTA",children=fta), html.P("Total FTA")],
+                                id="total_FTA",
                                 className="mini_container",
                             ),
                         ],
@@ -838,8 +868,8 @@ def update_statsgraph_figure(group_selected, player_team_selected, year_selected
                         id="info-container",
                         className="row container-display",
                     ),
-                    dcc.Graph(figure=record_pie),
-                    dcc.Graph(figure=basic_bar),
+                    # dcc.Graph(figure=record_pie),
+                    # dcc.Graph(figure=basic_bar),
                 ], className="six columns"),
         ], className="row")
         ]
