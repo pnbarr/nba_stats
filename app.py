@@ -646,23 +646,7 @@ def update_statsgraph_figure(group_selected, player_team_selected, year_selected
         team_info = [team for team in nba_teams
                      if team['full_name'] == player_team_selected][0]
         team_id = team_info['id']
-        team_yby_data = teamyearbyyearstats.TeamYearByYearStats(team_id=team_id)
-        team_yby_df = team_yby_data.get_data_frames()[0]
-        selected_year_data = team_yby_df.loc[team_yby_df['YEAR'] == selected_year]
-        data_columns = ['WINS','LOSSES','CONF_RANK','REB','AST','STL','TOV','BLK','PTS']
-        filtered_team_yby_df = selected_year_data[data_columns]
-        # Pie chart for display record data
-        record_pie_labels = ['WINS','LOSSES']
-        record_pie_values = [filtered_team_yby_df.iloc[0]['WINS'], filtered_team_yby_df.iloc[0]['LOSSES']]
-        record_pie = go.Figure(data=[go.Pie(labels=record_pie_labels, values=record_pie_values)])
-        colors=['cyan','orange']
-        record_pie.update_traces(marker=dict(colors=colors))
-        # Bar graph for displaying basic data 
-        basic_bar_labels = ['REB','AST','STL','TOV','BLK','PTS']
-        basic_bar_values = [filtered_team_yby_df.iloc[0]['REB'], filtered_team_yby_df.iloc[0]['AST'],
-                             filtered_team_yby_df.iloc[0]['STL'], filtered_team_yby_df.iloc[0]['TOV'],
-                             filtered_team_yby_df.iloc[0]['BLK'], filtered_team_yby_df.iloc[0]['PTS']]
-        basic_bar = go.Figure(data=[go.Bar(x=basic_bar_labels, y=basic_bar_values)])
+
         # Scatter plot data for team shot chart data
         team_zone_averages_df = generate_team_shotchart_averages(team_id, selected_year)
         team_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=team_id, player_id=0, season_nullable=selected_year, season_type_all_star='Regular Season')
@@ -731,14 +715,12 @@ def update_statsgraph_figure(group_selected, player_team_selected, year_selected
         total_FT_points = filtered_team_df.iloc[0]['FTM']
         total_FG2_points = total_points - total_FG3_points - total_FT_points
         # Shooting Percentages Data
-        # EFG = (FGM + 0.5*FG3M)/FGA
         fgm = filtered_team_df.iloc[0]['FGM']
         fga = filtered_team_df.iloc[0]['FGA']
         fg3m = filtered_team_df.iloc[0]['FG3M']
         fg3a = filtered_team_df.iloc[0]['FG3A']
         fg2a = fga - fg3a
         fta = filtered_team_df.iloc[0]['FTA']
-        #efg_perc = round(((fgm + 0.5*fg3m)/fga) * 100, 2)
         fg_perc = round(filtered_team_df.iloc[0]['FG_PCT'] * 100,2)
         fg2_perc = round(((fgm-fg3m)/(fga-fg3a)) * 100,2)
         fg3_perc = round(filtered_team_df.iloc[0]['FG3_PCT'] * 100, 2)
@@ -868,8 +850,6 @@ def update_statsgraph_figure(group_selected, player_team_selected, year_selected
                         id="info-container",
                         className="row container-display",
                     ),
-                    # dcc.Graph(figure=record_pie),
-                    # dcc.Graph(figure=basic_bar),
                 ], className="six columns"),
         ], className="row")
         ]
