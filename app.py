@@ -555,10 +555,41 @@ app.layout = html.Div(children=[
     ),
 
     html.Div(children='''
-        NBA Stats : A web applications for viewing NBA Statistics
+        NBA Shooting Trends from 1996-97 through 2018-19 Seasons
     ''', style={
         'textAlign':'center'
     }),
+
+    dcc.Slider(
+        id='year-slider',
+        min=0,
+        max=22,
+        value=0,
+        marks={0:'1996-97',
+               1:'1997-98',
+               2:'1998-99',
+               3:'1999-00',
+               4:'2000-01',
+               5:'2001-02',
+               6:'2002-03',
+               7:'2003-04',
+               8:'2004-05',
+               9:'2005-06',
+               10:'2006-07',
+               11:'2007-08',
+               12:'2008-09',
+               13:'2009-10',
+               14:'2010-11',
+               15:'2011-12',
+               16:'2012-13',
+               17:'2013-14',
+               18:'2014-15',
+               19:'2015-16',
+               20:'2016-17',
+               21:'2017-18',
+               22:'2018-19',},
+        step=None
+    ),
 
     html.Div(id='tabs-content')
 ])
@@ -583,9 +614,34 @@ def set_people_options(group):
 @app.callback(
     Output('tabs-content','children'),
     [Input('tabs-group','value'),
-     Input('people-dropdown','value')])
-def update_statsgraph_figure(group_selected, player_team_selected):
-    selected_year = '2015-16'  # TODO : Make this a slider input
+     Input('people-dropdown','value'),
+     Input('year-slider','value'),])
+def update_statsgraph_figure(group_selected, player_team_selected, year_selected_key):
+    #selected_year = '1996-97'  # TODO : Make this a slider input
+    year_selected_map={0:'1996-97',
+               1:'1997-98',
+               2:'1998-99',
+               3:'1999-00',
+               4:'2000-01',
+               5:'2001-02',
+               6:'2002-03',
+               7:'2003-04',
+               8:'2004-05',
+               9:'2005-06',
+               10:'2006-07',
+               11:'2007-08',
+               12:'2008-09',
+               13:'2009-10',
+               14:'2010-11',
+               15:'2011-12',
+               16:'2012-13',
+               17:'2013-14',
+               18:'2014-15',
+               19:'2015-16',
+               20:'2016-17',
+               21:'2017-18',
+               22:'2018-19',}
+    selected_year = year_selected_map[year_selected_key]
     if group_selected == 'Team':
         team_info = [team for team in nba_teams
                      if team['full_name'] == player_team_selected][0]
@@ -611,12 +667,8 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         team_zone_averages_df = generate_team_shotchart_averages(team_id, selected_year)
         team_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FGA', team_id=team_id, player_id=0, season_nullable=selected_year, season_type_all_star='Regular Season')
         team_shot_df = team_shot_data.get_data_frames()[0]
-        print('Raw Team Data')
-        print(team_shot_df)
         data_columns = ['SHOT_ZONE_BASIC','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y','PERIOD','SHOT_MADE_FLAG']
         filtered_team_shot_df = team_shot_df[data_columns]
-        print('Filtered Team Data')
-        print(filtered_team_shot_df)
         season_merged_df = pd.merge(filtered_team_shot_df, team_zone_averages_df,how='inner', on=['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA','SHOT_ZONE_RANGE'])
         season_xlocs = season_merged_df['LOC_X'].tolist()
         season_ylocs = season_merged_df['LOC_Y'].tolist()
@@ -676,17 +728,15 @@ def update_statsgraph_figure(group_selected, player_team_selected):
         # Point Totals Data
         total_points = filtered_team_df.iloc[0]['PTS']
         total_FG3_points = filtered_team_df.iloc[0]['FG3M'] * 3
-        print(total_FG3_points)
         total_FT_points = filtered_team_df.iloc[0]['FTM']
         total_FG2_points = total_points - total_FG3_points - total_FT_points
-        print(filtered_team_df)
         # Shooting Percentages Data
         # EFG = (FGM + 0.5*FG3M)/FGA
         fgm = filtered_team_df.iloc[0]['FGM']
         fga = filtered_team_df.iloc[0]['FGA']
         fg3m = filtered_team_df.iloc[0]['FG3M']
         fg3a = filtered_team_df.iloc[0]['FG3A']
-        efg_perc = round(((fgm + 0.5*fg3m)/fga) * 100, 2)
+        #efg_perc = round(((fgm + 0.5*fg3m)/fga) * 100, 2)
         fg_perc = round(filtered_team_df.iloc[0]['FG_PCT'] * 100,2)
         fg2_perc = round(((fgm-fg3m)/(fga-fg3a)) * 100,2)
         fg3_perc = round(filtered_team_df.iloc[0]['FG3_PCT'] * 100, 2)
