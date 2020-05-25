@@ -28,9 +28,9 @@ nba_teams = teams.get_teams()  # nba_teams is a list of dictionaries
 # 'state'
 # 'year_founded'
 
-nba_players = players.get_players()  # nba_players is a list of dictionaries
-#print('Frist NBA player data example.')
-#print(nba_players[0])
+players_nba = players.get_players()  # nba_players is a list of dictionaries
+# print('Frist NBA player data example.')
+# print(nba_players[0])
 # KEYS
 # 'id'
 # 'full_name'
@@ -44,8 +44,26 @@ team_example_df = team_example.get_data_frames()[0]
 # print(team_example_year_df)
 
 # Function should take a year season as an input and return list of players who played that year
-player_example = playercareerstats.PlayerCareerStats(player_id=nba_players[0]['id'])
-player_example_df = player_example.get_data_frames()[0]
+#player_example = playercareerstats.PlayerCareerStats(player_id='2544')
+# player_example = playercareerstats.PlayerCareerStats(player_id='76001')
+# player_example_df = player_example.get_data_frames()[0]
+# list_of_seasons = player_example_df['SEASON_ID'].values.tolist()
+list_of_applicable_seasons = ['1996-97','1997-98','1998-99','1999-00','2000-01','2001-02','2002-03','2003-04','2004-05',
+                              '2005-06','2006-07','2007-08','2008-09','2009-10','2010-11','2011-12','2012-13','2013-14',
+                              '2014-15','2015-16','2016-17','2017-18','2018-19']
+
+# Compile list of players who played anytime between the seasons 1996-97 - 2018-19
+nba_players=[]
+for player in players_nba[:5]:
+    player_id = player['id']
+    time.sleep(1)
+    player_career_stats = playercareerstats.PlayerCareerStats(player_id=player_id)
+    time.sleep(1)
+    player_career_stats_df = player_career_stats.get_data_frames()[0]
+    list_of_seasons = player_career_stats_df['SEASON_ID'].values.tolist()
+    player_in_relevant_time_frame = any(item in list_of_seasons for item in list_of_applicable_seasons)
+    if player_in_relevant_time_frame == True:
+        nba_players.append(player)
 
 # Shot Chart Detail
 # league_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FG_PCT', team_id=0, player_id=0, season_nullable='1997-98', season_type_all_star='Regular Season')
@@ -536,7 +554,7 @@ group_options = ['Team', 'Player']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.layout = html.Div(children=[
-    html.H1(children='Welcome to NBA Shooting Trends', style={
+    html.H1(children='NBA Shooting Trends 1996-97 through 2018-19 Seasons', style={
         'textAlign':'center'
     }),
 
@@ -554,17 +572,38 @@ app.layout = html.Div(children=[
     ]
     ),
 
-    html.Div(children='''
-        NBA Shooting Trends from 1996-97 through 2018-19 Seasons
-    ''', style={
-        'textAlign':'center'
-    }),
+    dcc.Slider(id='year-slider',
+               value=0),
 
-    dcc.Slider(
-        id='year-slider',
-        min=0,
-        max=22,
-        value=0,
+    html.Div(id='tabs-content')
+])
+
+# Callback updates options for people-dropdown based on group selected
+@app.callback(
+    Output('people-dropdown', 'options'),
+    [Input('tabs-group', 'value')])
+def set_people_options(group):
+    if group == 'Team':
+        nba_team_list =[]
+        for team in nba_teams:
+            nba_team_list.append(team['full_name'])
+        return [{'label': i, 'value': i} for i in nba_team_list]
+    else:
+        nba_player_list =[]
+        for player in nba_players:
+            nba_player_list.append(player['full_name'])
+        return [{'label': i, 'value': i} for i in nba_player_list]
+
+# Callback updates year-slider based on team or player seleced
+@app.callback(
+    [Output('year-slider', 'marks'),
+     Output('year-slider', 'min'),
+     Output('year-slider', 'max'),
+     Output('year-slider', 'value')],
+    [Input('tabs-group', 'value'),
+     Input('people-dropdown', 'value'),])
+def set_year_marks(group, player_team_selected):
+    if group == 'Team':
         marks={0:'1996-97',
                1:'1997-98',
                2:'1998-99',
@@ -587,28 +626,27 @@ app.layout = html.Div(children=[
                19:'2015-16',
                20:'2016-17',
                21:'2017-18',
-               22:'2018-19',},
-        step=None
-    ),
-
-    html.Div(id='tabs-content')
-])
-
-# Callback updates options for people-dropdown based on group selected
-@app.callback(
-    Output('people-dropdown', 'options'),
-    [Input('tabs-group', 'value')])
-def set_people_options(group):
-    if group == 'Team':
-        nba_team_list =[]
-        for team in nba_teams:
-            nba_team_list.append(team['full_name'])
-        return [{'label': i, 'value': i} for i in nba_team_list]
+               22:'2018-19',}
+        return marks, 0, 22, 0
     else:
-        nba_player_list =[]
-        for player in nba_players:
-            nba_player_list.append(player['full_name'])
-        return [{'label': i, 'value': i} for i in nba_player_list]
+        print(player_team_selected)
+        player_info = [player for player in nba_players
+                     if player['full_name'] == player_team_selected][0]
+        player_id = player_info['id']
+        player_career_data = playercareerstats.PlayerCareerStats(player_id=player_id)
+        player_career_df = player_career_data.get_data_frames()[0]
+        seasons_played = player_career_df['SEASON_ID'].values.tolist()
+        print('seasons played')
+        print(seasons_played)
+        players_applicable_seasons = sorted(set(seasons_played).intersection(list_of_applicable_seasons))
+        print('relevant seasons')
+        print(players_applicable_seasons)
+        marks={}
+        for i in range(0,len(players_applicable_seasons)):
+            marks[i] = players_applicable_seasons[i]
+        return marks, 0, 22, 0
+
+    
 
 # Callback updates graph based on player/team selected
 @app.callback(
@@ -860,23 +898,8 @@ def update_statsgraph_figure(group_selected, player_team_selected, year_selected
         player_id = player_info['id']
         player_career_data = playercareerstats.PlayerCareerStats(player_id=player_id)
         player_career_df = player_career_data.get_data_frames()[0]
-        selected_year_data = player_career_df.iloc[0]  #  TODO : Currently grabbing first year player played
-                                                       #  TODO : Include logic to average player's stats if 
-                                                       #         played for more than one team in a given
-                                                       #         season, need to normalize w/ respect to GP 
+        selected_year_data = player_career_df.loc[(player_career_df['SEASON_ID'] == selected_year)]
         season = selected_year_data['SEASON_ID']
-        filtered_player_df = selected_year_data[['REB','AST','STL','BLK','TOV','PTS','FG_PCT','FG3_PCT','FT_PCT']]
-        # Bar graph for displaying basic data 
-        basic_stats_x = ['REB','AST','STL','BLK','TOV','PTS']
-        basic_stats_y = [filtered_player_df.loc['REB'],filtered_player_df.loc['AST'],
-             filtered_player_df.loc['STL'],filtered_player_df.loc['BLK'],
-             filtered_player_df.loc['TOV'],filtered_player_df.loc['PTS']]
-        basic_stats_bar = go.Figure(data=[go.Bar(x=basic_stats_x,y=basic_stats_y,name=player_team_selected)])
-        # Bar graph for displaying percentages
-        perc_stats_x = ['FG_PCT','FG3_PCT','FT_PCT']
-        perc_stats_y = np.multiply(100, [filtered_player_df.loc['FG_PCT'],filtered_player_df.loc['FG3_PCT'],
-             filtered_player_df.loc['FT_PCT']])
-        perc_stats_bar = go.Figure(data=[go.Bar(x=perc_stats_x,y=perc_stats_y,name=player_team_selected)])
         
         # Scatter plot for displaying season shot chart data
         player_zone_averages_df, player_distance_averages_df, player_quarters_averages_df = generate_player_shotchart_averages(player_id, season)
@@ -1157,10 +1180,14 @@ def update_statsgraph_figure(group_selected, player_team_selected, year_selected
 
         shot_distance_pct_fig = px.line(player_distance_averages_df, x="SHOT_DISTANCE", y="PLAYER_FG_PCT")
 
+        print(season)
+
         return [
             html.Div(children='''
-                                Player Shot Chart Data
-                               ''',
+                                Player Shot Chart Data for the
+                               '''
+                               + season + ' Season'
+                               ,
                      style={
                          'textAlign': 'center'
                      }),
@@ -1224,30 +1251,6 @@ def update_statsgraph_figure(group_selected, player_team_selected, year_selected
                 dcc.Graph(figure=shot_distance_pct_fig ), 
             ]
             ),
-
-            html.Div(children='''
-                                Player Basic Bar Data
-                               ''',
-                     style={
-                         'textAlign': 'center'
-                     }),
-
-            html.Div([
-                dcc.Graph(figure=basic_stats_bar),
-            ]
-
-            ),
-            html.Div(children='''
-                                Player Percentage Data
-                               ''',
-                     style={
-                         'textAlign': 'center'
-                     }),
-
-            html.Div([
-                dcc.Graph(figure=perc_stats_bar), 
-            ]
-            ),  
         ]
 
 
