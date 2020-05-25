@@ -629,18 +629,13 @@ def set_year_marks(group, player_team_selected):
                22:'2018-19',}
         return marks, 0, 22, 0
     else:
-        print(player_team_selected)
         player_info = [player for player in nba_players
                      if player['full_name'] == player_team_selected][0]
         player_id = player_info['id']
         player_career_data = playercareerstats.PlayerCareerStats(player_id=player_id)
         player_career_df = player_career_data.get_data_frames()[0]
         seasons_played = player_career_df['SEASON_ID'].values.tolist()
-        print('seasons played')
-        print(seasons_played)
         players_applicable_seasons = sorted(set(seasons_played).intersection(list_of_applicable_seasons))
-        print('relevant seasons')
-        print(players_applicable_seasons)
         marks={}
         for i in range(0,len(players_applicable_seasons)):
             marks[i] = players_applicable_seasons[i]
@@ -1179,8 +1174,6 @@ def update_statsgraph_figure(group_selected, player_team_selected, year_selected
         ))
 
         shot_distance_pct_fig = px.line(player_distance_averages_df, x="SHOT_DISTANCE", y="PLAYER_FG_PCT")
-
-        print(season)
 
         return [
             html.Div(children='''
