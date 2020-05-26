@@ -575,6 +575,22 @@ app.layout = html.Div(children=[
     dcc.Slider(id='year-slider',
                value=0),
 
+    dcc.RadioItems(
+                id='shotfilter-radio',
+                options=[
+                    {'label': 'Season', 'value': 'season'},
+                    {'label': '1st Quarter', 'value': 'first'},
+                    {'label': '2nd Quarter', 'value': 'second'},
+                    {'label': '3rd Quarter', 'value': 'third'},
+                    {'label': '4th Quarter', 'value': 'fourth'}
+                ],
+                value='season',
+                labelStyle={'display': 'inline-block'},
+                style={
+                         'textAlign': 'center'
+                     }
+            ),  
+
     html.Div(id='tabs-content')
 ])
 
@@ -648,8 +664,9 @@ def set_year_marks(group, player_team_selected):
     [Input('tabs-group','value'),
      Input('people-dropdown','value'),
      Input('year-slider','value'),
-     Input('year-slider','marks'),])
-def update_statsgraph_figure(group_selected, player_team_selected, year_selected_key, year_marks):
+     Input('year-slider','marks'),
+     Input('shotfilter-radio','value')])
+def update_statsgraph_figure(group_selected, player_team_selected, year_selected_key, year_marks, shot_filter):
     #selected_year = '1996-97'  # TODO : Make this a slider input
     if group_selected == 'Team':
         year_selected_map={0:'1996-97',
@@ -906,6 +923,8 @@ def update_statsgraph_figure(group_selected, player_team_selected, year_selected
         player_shot_df = player_shot_data.get_data_frames()[0]
         data_columns = ['SHOT_ZONE_BASIC','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y','PERIOD']
         filtered_player_shot_df = player_shot_df[data_columns]
+
+        # Season Data
         season_merged_df = pd.merge(filtered_player_shot_df, player_zone_averages_df,how='inner', on=['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA','SHOT_ZONE_RANGE'])
         season_xlocs = season_merged_df['LOC_X'].tolist()
         season_ylocs = season_merged_df['LOC_Y'].tolist()
@@ -1187,7 +1206,7 @@ def update_statsgraph_figure(group_selected, player_team_selected, year_selected
                                ,
                      style={
                          'textAlign': 'center'
-                     }),
+                     }), 
 
             html.Div([
                 dcc.Graph(figure=season_player_shot_chart), 
