@@ -639,19 +639,20 @@ def set_year_marks(group, player_team_selected):
         marks={}
         for i in range(0,len(players_applicable_seasons)):
             marks[i] = players_applicable_seasons[i]
-        return marks, 0, 22, 0
+        return marks, 0, len(players_applicable_seasons) - 1, 0
 
-    
 
 # Callback updates graph based on player/team selected
 @app.callback(
     Output('tabs-content','children'),
     [Input('tabs-group','value'),
      Input('people-dropdown','value'),
-     Input('year-slider','value'),])
-def update_statsgraph_figure(group_selected, player_team_selected, year_selected_key):
+     Input('year-slider','value'),
+     Input('year-slider','marks'),])
+def update_statsgraph_figure(group_selected, player_team_selected, year_selected_key, year_marks):
     #selected_year = '1996-97'  # TODO : Make this a slider input
-    year_selected_map={0:'1996-97',
+    if group_selected == 'Team':
+        year_selected_map={0:'1996-97',
                1:'1997-98',
                2:'1998-99',
                3:'1999-00',
@@ -674,8 +675,7 @@ def update_statsgraph_figure(group_selected, player_team_selected, year_selected
                20:'2016-17',
                21:'2017-18',
                22:'2018-19',}
-    selected_year = year_selected_map[year_selected_key]
-    if group_selected == 'Team':
+        selected_year = year_selected_map[year_selected_key]
         team_info = [team for team in nba_teams
                      if team['full_name'] == player_team_selected][0]
         team_id = team_info['id']
@@ -888,12 +888,16 @@ def update_statsgraph_figure(group_selected, player_team_selected, year_selected
         ]
 
     else:  # Put player logic here
+        selected_year = year_marks[str(year_selected_key)]
         player_info = [player for player in nba_players
                      if player['full_name'] == player_team_selected][0]
         player_id = player_info['id']
         player_career_data = playercareerstats.PlayerCareerStats(player_id=player_id)
         player_career_df = player_career_data.get_data_frames()[0]
         selected_year_data = player_career_df.loc[(player_career_df['SEASON_ID'] == selected_year)]
+        # If player played for multiple teams in the same season, select total stats for that season
+        if(len(selected_year_data.index) > 1):
+            selected_year_data = selected_year_data.loc[(player_career_df['TEAM_ID'] == 0)]
         season = selected_year_data['SEASON_ID']
         
         # Scatter plot for displaying season shot chart data
@@ -930,7 +934,7 @@ def update_statsgraph_figure(group_selected, player_team_selected, year_selected
                 color = season_rel_shot_accur, colorscale = colorscale,
                 colorbar=dict(
                     thickness=15,
-                    x=0.84,
+                    x=0.75,
                     y=0.87,
                     yanchor='middle',
                     len=0.2,
@@ -985,7 +989,7 @@ def update_statsgraph_figure(group_selected, player_team_selected, year_selected
                 color = first_quarter_player_shot_accur , colorscale = colorscale,
                 colorbar=dict(
                     thickness=15,
-                    x=0.84,
+                    x=0.75,
                     y=0.87,
                     yanchor='middle',
                     len=0.2,
@@ -1040,7 +1044,7 @@ def update_statsgraph_figure(group_selected, player_team_selected, year_selected
                 color = second_quarter_player_shot_accur , colorscale = colorscale,
                 colorbar=dict(
                     thickness=15,
-                    x=0.84,
+                    x=0.75,
                     y=0.87,
                     yanchor='middle',
                     len=0.2,
@@ -1095,7 +1099,7 @@ def update_statsgraph_figure(group_selected, player_team_selected, year_selected
                 color = third_quarter_player_shot_accur , colorscale = colorscale,
                 colorbar=dict(
                     thickness=15,
-                    x=0.84,
+                    x=0.75,
                     y=0.87,
                     yanchor='middle',
                     len=0.2,
@@ -1150,7 +1154,7 @@ def update_statsgraph_figure(group_selected, player_team_selected, year_selected
                 color = fourth_quarter_player_shot_accur , colorscale = colorscale,
                 colorbar=dict(
                     thickness=15,
-                    x=0.84,
+                    x=0.75,
                     y=0.87,
                     yanchor='middle',
                     len=0.2,
