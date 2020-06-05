@@ -137,8 +137,6 @@ def build_team_tab():
     min_year_slider = 0
     max_year_slider = 22
     value_year_slider = 0
-    print('team options')
-    print(team_options)
     team_value = team_options[0]['value']
     return [
         html.Div([
@@ -157,16 +155,44 @@ def build_team_tab():
 
 def build_player_tab():
     player_options = set_people_dropdown_options('Player')
-    print('player options')
-    print(player_options)
+    marks_year_slider = {0: '1996-97',
+             1: '1997-98',
+             2: '1998-99',
+             3: '1999-00',
+             4: '2000-01',
+             5: '2001-02',
+             6: '2002-03',
+             7: '2003-04',
+             8: '2004-05',
+             9: '2005-06',
+             10: '2006-07',
+             11: '2007-08',
+             12: '2008-09',
+             13: '2009-10',
+             14: '2010-11',
+             15: '2011-12',
+             16: '2012-13',
+             17: '2013-14',
+             18: '2014-15',
+             19: '2015-16',
+             20: '2016-17',
+             21: '2017-18',
+             22: '2018-19', }
+    min_year_slider = 0
+    max_year_slider = 22
+    value_year_slider = 0
     player_value = player_options[0]['value']
     return [
         html.Div([
+            dcc.Store(id='player-store', storage_type='session'),
             dcc.Dropdown(id='player-dropdown',
                          options=player_options,
                          value=player_value),
             dcc.Slider(id='player-year-slider',
-                       value=0),
+                       marks=marks_year_slider,
+                       min=min_year_slider,
+                       max=max_year_slider,
+                       value=value_year_slider),
             dcc.RadioItems(
                 id='shotfilter-radio',
                 options=[
@@ -638,23 +664,16 @@ def generate_player_shotchart_averages(player_id, season):
 
 
 def set_people_dropdown_options(group):
-    print("entered set_people_options method. Value of group is :")
-    print(group)
     if group == 'Team':
-        print('entered people options callback')
-        print('Team')
         nba_team_list = []
         for team in nba_teams:
             nba_team_list.append(team['full_name'])
         return [{'label': i, 'value': i} for i in nba_team_list]
     else:
-        print('entered people options callback')
-        print('Player')
         nba_player_list = []
         for player in nba_players:
             nba_player_list.append(player['full_name'])
         return [{'label': i, 'value': i} for i in nba_player_list]
-
 
 # ======================================================================================================= #
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -670,13 +689,6 @@ app.layout = html.Div(children=[
         'textAlign': 'center'
     }),
 
-    # dcc.Interval(
-    #         id="interval-component",
-    #         interval=2 * 1000,  # in milliseconds
-    #         n_intervals=50,  # start at batch 50
-    #         disabled=True,
-    #     ),
-
     html.Div(
         id="app-container",
         children=[
@@ -685,160 +697,30 @@ app.layout = html.Div(children=[
             html.Div(id="app-content"),
         ],
     ),
-
-    # dcc.Store(id="n-interval-stage", data=50),
-
-    # html.Div([
-    #     dcc.Dropdown(id='people-dropdown'),
-    # ]
-    # ),
-
-    # dcc.Slider(id='year-slider',
-    #            value=0),
-
-    # dcc.RadioItems(
-    #             id='shotfilter-radio',
-    #             options=[
-    #                 {'label': 'Season', 'value': 'season'},
-    #                 {'label': '1st Quarter', 'value': 'first'},
-    #                 {'label': '2nd Quarter', 'value': 'second'},
-    #                 {'label': '3rd Quarter', 'value': 'third'},
-    #                 {'label': '4th Quarter', 'value': 'fourth'}
-    #             ],
-    #             value='season',
-    #             labelStyle={'display': 'inline-block'},
-    #             style={
-    #                      'textAlign': 'center'
-    #                  }
-    #         ),
-
-    # html.Div(id='tabs-content')
 ])
 
 # Callback to update tabs
-# @app.callback(
-#     [Output('app-content', 'children'), Output("interval-component", "n-intervals")],
-#     [Input('tabs-group', 'value')],
-#     [State("n-interval-stage", "data")],
-# )
-# def render_tab_content(tab_switch, stopped_interval):
-#     if tab_switch == 'Player':
-#         print('Entered Update Tabs Callback')
-#         print('Player')
-#         return build_player_tab(), stopped_interval
-#     if tab_switch == 'Team':
-#         print('Entered Update Tabs Callback')
-#         print('Team')
-#         return build_team_tab(), stopped_interval
-
-# Callback to update tabs
-
-
 @app.callback(
     [Output('app-content', 'children')],
     [Input('tabs-group', 'value')],
 )
 def render_tab_content(tab_switch):
     if tab_switch == 'Player':
-        print('Entered Update Tabs Callback')
-        print('Player')
         return build_player_tab()
     if tab_switch == 'Team':
-        print('Entered Update Tabs Callback')
-        print('Team')
         return build_team_tab()
 
-
-# Update interval
-# @app.callback(
-#     Output('n-interval-stage', 'data'),
-#     [Input('tabs-group', 'value')],
-#     [
-#         State('interval-component', 'n_intervals'),
-#         State('interval-component', 'disabled'),
-#         State('n-interval-stage', 'data'),
-#     ],
-# )
-# def update_interval_state(tab_switch, cur_interval, disabled, cur_stage):
-#     if disabled:
-#         return cur_interval
-
-#     if tab_switch == "Player":
-#         return cur_interval
-#     return cur_stage
-
-
-# Callback updates options for people-dropdown based on group selected
-# @app.callback(
-#     Output('people-dropdown', 'options'),
-#     [Input('tabs-group', 'value')])
-# def set_people_options(group):
-#     print("entered set_people_options method. Value of group is :")
-#     print(group)
-#     if group == 'Team':
-#         print('entered people options callback')
-#         print('Team')
-#         nba_team_list = []
-#         for team in nba_teams:
-#             nba_team_list.append(team['full_name'])
-#         return [{'label': i, 'value': i} for i in nba_team_list]
-#     else:
-#         print('entered people options callback')
-#         print('Player')
-#         nba_player_list = []
-#         for player in nba_players:
-#             nba_player_list.append(player['full_name'])
-#         return [{'label': i, 'value': i} for i in nba_player_list]
-
-# Callback updates year-slider based on team seleced
-# @app.callback(
-#     [Output('team-year-slider', 'marks'),
-#      Output('team-year-slider', 'min'),
-#      Output('team-year-slider', 'max'),
-#      Output('team-year-slider', 'value')],
-#     [Input('tabs-group', 'value'),
-#      Input('team-dropdown', 'value'), ])
-# def set_team_year_marks(group, player_team_selected):
-#     print('Group Selected')
-#     print(group)
-#     if group == 'Team':
-#         marks = {0: '1996-97',
-#                  1: '1997-98',
-#                  2: '1998-99',
-#                  3: '1999-00',
-#                  4: '2000-01',
-#                  5: '2001-02',
-#                  6: '2002-03',
-#                  7: '2003-04',
-#                  8: '2004-05',
-#                  9: '2005-06',
-#                  10: '2006-07',
-#                  11: '2007-08',
-#                  12: '2008-09',
-#                  13: '2009-10',
-#                  14: '2010-11',
-#                  15: '2011-12',
-#                  16: '2012-13',
-#                  17: '2013-14',
-#                  18: '2014-15',
-#                  19: '2015-16',
-#                  20: '2016-17',
-#                  21: '2017-18',
-#                  22: '2018-19', }
-#         return marks, 0, 22, 0
 # Callback updates year-slider based on player seleced
 @app.callback(
     [Output('player-year-slider', 'marks'),
      Output('player-year-slider', 'min'),
      Output('player-year-slider', 'max'),
-     Output('player-year-slider', 'value')],
+     Output('player-year-slider', 'value'),
+     Output('player-store', 'data')],
     [Input('player-dropdown', 'value'), ])
 def set_player_year_marks(player_selected):
-    print('Player Selected')
-    print(player_selected)
     player_info = [player for player in nba_players
                    if player['full_name'] == player_selected][0]
-    print(player_info)
     player_id = player_info['id']
     player_career_data = playercareerstats.PlayerCareerStats(
         player_id=player_id)
@@ -849,8 +731,7 @@ def set_player_year_marks(player_selected):
     marks = {}
     for i in range(0, len(players_applicable_seasons)):
         marks[i] = players_applicable_seasons[i]
-    return marks, 0, len(players_applicable_seasons) - 1, 0
-
+    return marks, 0, len(players_applicable_seasons) - 1, 0, player_selected
 
 # Callback updates tab content if team selected
 @app.callback(
@@ -859,10 +740,6 @@ def set_player_year_marks(player_selected):
      Input('team-year-slider', 'value'),
      Input('team-year-slider', 'marks')])
 def update_team_tab(team_selected, year_selected_key, year_marks):
-    # selected_year = '1996-97'  # TODO : Make this a slider input
-    print('Team Selected')
-    print(team_selected)
-    # if group_selected == 'Team':
     year_selected_map = {0: '1996-97',
                          1: '1997-98',
                          2: '1998-99',
@@ -1130,18 +1007,12 @@ def update_team_tab(team_selected, year_selected_key, year_marks):
 # Callback updates player tab content based on player selected
 @app.callback(
     Output('player-tab-content', 'children'),
-    [Input('player-dropdown', 'value'),
+    [Input('player-store', 'data'),
      Input('player-year-slider', 'value'),
      Input('player-year-slider', 'marks'),
      Input('shotfilter-radio', 'value')])
 def update_statsgraph_figure(player_selected, year_selected_key, year_marks, shot_filter):
-    print('year selected key')
-    print(year_selected_key)
-    print('year marks')
-    print(year_marks)
     selected_year = year_marks[str(year_selected_key)]
-    print('selected year')
-    print(selected_year)
     player_info = [player for player in nba_players
                    if player['full_name'] == player_selected][0]
     player_id = player_info['id']
@@ -1562,724 +1433,6 @@ def update_statsgraph_figure(player_selected, year_selected_key, year_marks, sho
         ]
         ),
     ]
-
-
-# Callback updates graph based on player/team selected
-# @app.callback(
-#     Output('tabs-content', 'children'),
-#     [Input('tabs-group', 'value'),
-#      Input('people-dropdown', 'value'),
-#      Input('year-slider', 'value'),
-#      Input('year-slider', 'marks'),
-#      Input('shotfilter-radio', 'value')])
-# def update_statsgraph_figure(group_selected, player_team_selected, year_selected_key, year_marks, shot_filter):
-#     #selected_year = '1996-97'  # TODO : Make this a slider input
-#     if group_selected == 'Team':
-#         year_selected_map = {0: '1996-97',
-#                              1: '1997-98',
-#                              2: '1998-99',
-#                              3: '1999-00',
-#                              4: '2000-01',
-#                              5: '2001-02',
-#                              6: '2002-03',
-#                              7: '2003-04',
-#                              8: '2004-05',
-#                              9: '2005-06',
-#                              10: '2006-07',
-#                              11: '2007-08',
-#                              12: '2008-09',
-#                              13: '2009-10',
-#                              14: '2010-11',
-#                              15: '2011-12',
-#                              16: '2012-13',
-#                              17: '2013-14',
-#                              18: '2014-15',
-#                              19: '2015-16',
-#                              20: '2016-17',
-#                              21: '2017-18',
-#                              22: '2018-19', }
-#         selected_year = year_selected_map[year_selected_key]
-#         team_info = [team for team in nba_teams
-#                      if team['full_name'] == player_team_selected][0]
-#         team_id = team_info['id']
-
-#         # Scatter plot data for team shot chart data
-#         team_zone_averages_df = generate_team_shotchart_averages(
-#             team_id, selected_year)
-#         team_shot_data = shotchartdetail.ShotChartDetail(
-#             context_measure_simple='FGA', team_id=team_id, player_id=0, season_nullable=selected_year, season_type_all_star='Regular Season')
-#         team_shot_df = team_shot_data.get_data_frames()[0]
-#         data_columns = ['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE',
-#                         'SHOT_DISTANCE', 'LOC_X', 'LOC_Y', 'PERIOD', 'SHOT_MADE_FLAG']
-#         filtered_team_shot_df = team_shot_df[data_columns]
-#         season_merged_df = pd.merge(filtered_team_shot_df, team_zone_averages_df, how='inner', on=[
-#                                     'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE'])
-#         season_xlocs = season_merged_df['LOC_X'].tolist()
-#         season_ylocs = season_merged_df['LOC_Y'].tolist()
-#         season_shot_freq = season_merged_df['FREQ'].tolist()
-#         season_rel_shot_accur = season_merged_df['RELATIVE_FG_PCT'].tolist()
-#         season_league_shot_accur = season_merged_df['LEAGUE_FG_PCT'].tolist()
-#         season_team_shot_accur = season_merged_df['TEAM_FG_PCT'].tolist()
-#         season_team_shot_chart = go.Figure()
-#         draw_plotly_court(season_team_shot_chart)
-#         colorscale = 'RdYlBu_r'
-#         marker_cmin = -0.05
-#         marker_cmax = 0.05
-#         ticktexts = ["Below Average", "Average", "Above Average"]
-#         hexbin_text = [
-#             '<i>Relative Accuracy: </i>' +
-#             str(round(season_rel_shot_accur[i]
-#                       * 100, 1)) + '% (vs league avg)<BR>'
-#             '<i>Team Accuracy: </i>' +
-#             str(round(season_team_shot_accur[i]*100, 2)) + '% (team avg)<BR>'
-#             '<i>League Accuracy: </i>' +
-#             str(round(season_league_shot_accur[i]
-#                       * 100, 3)) + '% (league avg)<BR>'
-#             '<i>Frequency: </i>' + str(round(season_shot_freq[i]*100, 4)) + '%'
-#             for i in range(len(season_shot_freq))
-#         ]
-#         season_team_shot_chart.add_trace(go.Scatter(
-#             x=season_xlocs, y=season_ylocs, mode='markers', name='markers', text=hexbin_text,
-#             marker=dict(
-#                 size=season_shot_freq, sizemode='area', sizeref=2. * max(season_shot_freq, default=0) / (11. ** 2), sizemin=2.5,
-#                 line=dict(width=1, color='#333333'), symbol='hexagon',
-#                 color=season_rel_shot_accur, colorscale=colorscale,
-#                 colorbar=dict(
-#                     thickness=15,
-#                     x=0.75,
-#                     y=0.87,
-#                     yanchor='middle',
-#                     len=0.2,
-#                     title=dict(
-#                         text="<B>Accuracy</B>",
-#                         font=dict(
-#                             size=11,
-#                             color='#4d4d4d'
-#                         ),
-#                     ),
-#                     tickvals=[marker_cmin,
-#                               (marker_cmin + marker_cmax) / 2, marker_cmax],
-#                     ticktext=ticktexts,
-#                     tickfont=dict(
-#                         size=11,
-#                         color='#4d4d4d'
-#                     )
-#                 ),
-#                 cmin=marker_cmin, cmax=marker_cmax,
-#             ),
-#             hoverinfo='text'
-#         ))
-
-#         team_example = teamyearbyyearstats.TeamYearByYearStats(team_id=team_id)
-#         team_example_df = team_example.get_data_frames()[0]
-#         team_example_year_df = team_example_df.loc[(
-#             team_example_df['YEAR'] == selected_year)]
-#         data_columns = ['FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT', 'FTM',
-#                         'FTA', 'FT_PCT', 'PTS', 'WINS', 'LOSSES', 'CONF_RANK', 'DIV_RANK', 'PTS_RANK']
-#         filtered_team_df = team_example_year_df[data_columns]
-#         # Point Totals Data
-#         total_points = filtered_team_df.iloc[0]['PTS']
-#         total_FG3_points = filtered_team_df.iloc[0]['FG3M'] * 3
-#         total_FT_points = filtered_team_df.iloc[0]['FTM']
-#         total_FG2_points = total_points - total_FG3_points - total_FT_points
-#         # Shooting Percentages Data
-#         fgm = filtered_team_df.iloc[0]['FGM']
-#         fga = filtered_team_df.iloc[0]['FGA']
-#         fg3m = filtered_team_df.iloc[0]['FG3M']
-#         fg3a = filtered_team_df.iloc[0]['FG3A']
-#         fg2a = fga - fg3a
-#         fta = filtered_team_df.iloc[0]['FTA']
-#         fg_perc = round(filtered_team_df.iloc[0]['FG_PCT'] * 100, 2)
-#         fg2_perc = round(((fgm-fg3m)/(fga-fg3a)) * 100, 2)
-#         fg3_perc = round(filtered_team_df.iloc[0]['FG3_PCT'] * 100, 2)
-#         ft_perc = round(filtered_team_df.iloc[0]['FT_PCT'] * 100, 2)
-#         # Team Performance Metrics
-#         wins = int(filtered_team_df.iloc[0]['WINS'])
-#         losses = int(filtered_team_df.iloc[0]['LOSSES'])
-#         record = str(wins) + '-' + str(losses)
-#         conf_rank = filtered_team_df.iloc[0]['CONF_RANK']
-#         div_rank = filtered_team_df.iloc[0]['DIV_RANK']
-#         pts_rank = filtered_team_df.iloc[0]['PTS_RANK']
-#         return [
-#             html.Div(children='''
-#                                 Team Shot Chart Data
-#                                ''',
-#                      style={
-#                          'textAlign': 'center'
-#                      }),
-
-#             html.Div([
-#                 html.Div([
-#                     dcc.Graph(figure=season_team_shot_chart)
-#                 ], className="six columns"),
-
-#                 html.Div([
-#                     html.Div(
-#                         [
-#                             html.Div(
-#                                 [html.H6(id="win_pct", children=record),
-#                                  html.P("Record")],
-#                                 id="win_pct",
-#                                 className="mini_container",
-#                             ),
-#                             html.Div(
-#                                 [html.H6(id="conf_rank", children=conf_rank), html.P(
-#                                     "Conference Rank")],
-#                                 id="conf_rank",
-#                                 className="mini_container",
-#                             ),
-#                             html.Div(
-#                                 [html.H6(id="div_rank", children=div_rank),
-#                                  html.P("Division Rank")],
-#                                 id="div_rank",
-#                                 className="mini_container",
-#                             ),
-#                             html.Div(
-#                                 [html.H6(id="pts_rank", children=pts_rank),
-#                                  html.P("Points Rank")],
-#                                 id="pts_rank",
-#                                 className="mini_container",
-#                             ),
-#                         ],
-#                         id="info-container",
-#                         className="row container-display",
-#                     ),
-#                     html.Div(
-#                         [
-#                             html.Div(
-#                                 [html.H6(id="total_fga", children=fga),
-#                                  html.P("Total FGA")],
-#                                 id="total_fga",
-#                                 className="mini_container",
-#                             ),
-#                             html.Div(
-#                                 [html.H6(id="total_FG2_fga", children=fg2a), html.P(
-#                                     "Total 2PT FGA")],
-#                                 id="total_FG2_fga",
-#                                 className="mini_container",
-#                             ),
-#                             html.Div(
-#                                 [html.H6(id="total_FG3_fga", children=fg3a), html.P(
-#                                     "Total 3PT FGA")],
-#                                 id="total_FG3_fga",
-#                                 className="mini_container",
-#                             ),
-#                             html.Div(
-#                                 [html.H6(id="total_FTA", children=fta),
-#                                  html.P("Total FTA")],
-#                                 id="total_FTA",
-#                                 className="mini_container",
-#                             ),
-#                         ],
-#                         id="info-container",
-#                         className="row container-display",
-#                     ),
-#                     html.Div(
-#                         [
-#                             html.Div(
-#                                 [html.H6(id="total_points", children=total_points), html.P(
-#                                     "Total Points")],
-#                                 id="total_points",
-#                                 className="mini_container",
-#                             ),
-#                             html.Div(
-#                                 [html.H6(id="total_FG2_points", children=total_FG2_points), html.P(
-#                                     "Total Points from 2PT FG")],
-#                                 id="total_FG2_points",
-#                                 className="mini_container",
-#                             ),
-#                             html.Div(
-#                                 [html.H6(id="total_FG3_points", children=total_FG3_points), html.P(
-#                                     "Total Points from 3PT FG")],
-#                                 id="total_FG3_points",
-#                                 className="mini_container",
-#                             ),
-#                             html.Div(
-#                                 [html.H6(id="total_FT_points", children=total_FT_points), html.P(
-#                                     "Total Points from FT")],
-#                                 id="total_FT_points",
-#                                 className="mini_container",
-#                             ),
-#                         ],
-#                         id="info-container",
-#                         className="row container-display",
-#                     ),
-#                     html.Div(
-#                         [
-#                             html.Div(
-#                                 [html.H6(id="fg", children=fg_perc),
-#                                  html.P("FG%")],
-#                                 id="fg",
-#                                 className="mini_container",
-#                             ),
-#                             html.Div(
-#                                 [html.H6(id="fg2", children=fg2_perc),
-#                                  html.P("2-PT FG%")],
-#                                 id="fg2",
-#                                 className="mini_container",
-#                             ),
-#                             html.Div(
-#                                 [html.H6(id="fg3", children=fg3_perc),
-#                                  html.P("3-PT FG%")],
-#                                 id="fg3",
-#                                 className="mini_container",
-#                             ),
-#                             html.Div(
-#                                 [html.H6(id="ftp", children=ft_perc),
-#                                  html.P("FT%")],
-#                                 id="ftp",
-#                                 className="mini_container",
-#                             ),
-#                         ],
-#                         id="info-container",
-#                         className="row container-display",
-#                     ),
-#                 ], className="six columns"),
-#             ], className="row")
-#         ]
-
-#     else:  # Put player logic here
-#         selected_year = year_marks[str(year_selected_key)]
-#         player_info = [player for player in nba_players
-#                        if player['full_name'] == player_team_selected][0]
-#         player_id = player_info['id']
-#         player_career_data = playercareerstats.PlayerCareerStats(
-#             player_id=player_id)
-#         player_career_df = player_career_data.get_data_frames()[0]
-#         selected_year_data = player_career_df.loc[(
-#             player_career_df['SEASON_ID'] == selected_year)]
-#         # If player played for multiple teams in the same season, select total stats for that season
-#         if(len(selected_year_data.index) > 1):
-#             selected_year_data = selected_year_data.loc[(
-#                 player_career_df['TEAM_ID'] == 0)]
-#         season = selected_year_data['SEASON_ID']
-
-#         # Scatter plot for displaying season shot chart data
-#         player_zone_averages_df, player_distance_averages_df, player_quarters_averages_df = generate_player_shotchart_averages(
-#             player_id, season)
-#         player_shot_data = shotchartdetail.ShotChartDetail(
-#             context_measure_simple='FGA', team_id=0, player_id=player_id, season_nullable=season, season_type_all_star='Regular Season')
-#         player_shot_df = player_shot_data.get_data_frames()[0]
-#         data_columns = ['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA',
-#                         'SHOT_ZONE_RANGE', 'SHOT_DISTANCE', 'LOC_X', 'LOC_Y', 'PERIOD']
-#         filtered_player_shot_df = player_shot_df[data_columns]
-
-#         # Season Data
-#         season_merged_df = pd.merge(filtered_player_shot_df, player_zone_averages_df, how='inner', on=[
-#                                     'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE'])
-#         season_xlocs = season_merged_df['LOC_X'].tolist()
-#         season_ylocs = season_merged_df['LOC_Y'].tolist()
-#         season_shot_freq = season_merged_df['FREQ'].tolist()
-#         season_rel_shot_accur = season_merged_df['RELATIVE_FG_PCT'].tolist()
-#         season_league_shot_accur = season_merged_df['LEAGUE_FG_PCT'].tolist()
-#         season_player_shot_accur = season_merged_df['PLAYER_FG_PCT'].tolist()
-#         season_player_shot_chart = go.Figure()
-#         draw_plotly_court(season_player_shot_chart)
-#         colorscale = 'RdYlBu_r'
-#         marker_cmin = -0.05
-#         marker_cmax = 0.05
-#         ticktexts = ["Below Average", "Average", "Above Average"]
-#         hexbin_text = [
-#             '<i>Relative Accuracy: </i>' +
-#             str(round(season_rel_shot_accur[i]
-#                       * 100, 1)) + '% (vs league avg)<BR>'
-#             '<i>Player Accuracy: </i>' +
-#             str(round(season_player_shot_accur[i]
-#                       * 100, 2)) + '% (player avg)<BR>'
-#             '<i>League Accuracy: </i>' +
-#             str(round(season_league_shot_accur[i]
-#                       * 100, 3)) + '% (league avg)<BR>'
-#             '<i>Frequency: </i>' + str(round(season_shot_freq[i]*100, 4)) + '%'
-#             for i in range(len(season_shot_freq))
-#         ]
-#         season_player_shot_chart.add_trace(go.Scatter(
-#             x=season_xlocs, y=season_ylocs, mode='markers', name='markers', text=hexbin_text,
-#             marker=dict(
-#                 size=season_shot_freq, sizemode='area', sizeref=2. * max(season_shot_freq, default=0) / (11. ** 2), sizemin=2.5,
-#                 line=dict(width=1, color='#333333'), symbol='hexagon',
-#                 color=season_rel_shot_accur, colorscale=colorscale,
-#                 colorbar=dict(
-#                     thickness=15,
-#                     x=0.75,
-#                     y=0.87,
-#                     yanchor='middle',
-#                     len=0.2,
-#                     title=dict(
-#                         text="<B>Accuracy</B>",
-#                         font=dict(
-#                             size=11,
-#                             color='#4d4d4d'
-#                         ),
-#                     ),
-#                     tickvals=[marker_cmin,
-#                               (marker_cmin + marker_cmax) / 2, marker_cmax],
-#                     ticktext=ticktexts,
-#                     tickfont=dict(
-#                         size=11,
-#                         color='#4d4d4d'
-#                     )
-#                 ),
-#                 cmin=marker_cmin, cmax=marker_cmax,
-#             ),
-#             hoverinfo='text'
-#         ))
-
-#         # Scatter plot for displaying season 1st quarter shot chart data
-#         first_quarter_averages_df = player_quarters_averages_df.loc[(
-#             player_quarters_averages_df['PERIOD'] == 1)]
-#         first_quarter_merged_df = pd.merge(filtered_player_shot_df, first_quarter_averages_df, how='inner', on=[
-#                                            'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE', 'PERIOD'])
-#         first_quarter_xlocs = first_quarter_merged_df['LOC_X'].tolist()
-#         first_quarter_ylocs = first_quarter_merged_df['LOC_Y'].tolist()
-#         first_quarter_shot_FGM = first_quarter_merged_df['FGM'].tolist()
-#         first_quarter_shot_FGA = first_quarter_merged_df['FGA'].tolist()
-#         first_quarter_shot_freq = first_quarter_merged_df['FREQ'].tolist()
-#         first_quarter_shot = first_quarter_merged_df['PERIOD'].tolist()
-#         first_quarter_player_shot_accur = first_quarter_merged_df['PLAYER_FG_PCT'].tolist(
-#         )
-#         first_quarter_player_shot_chart = go.Figure()
-#         draw_plotly_court(first_quarter_player_shot_chart)
-#         colorscale = 'RdYlBu_r'
-#         marker_cmin = 0.2
-#         marker_cmax = 0.6
-#         ticktexts = ["Below 40%", "40%", "Above 40%"]
-#         hexbin_text = [
-#             '<i>Player Accuracy: </i>' +
-#             str(round(
-#                 first_quarter_player_shot_accur[i]*100, 1)) + '% (player avg)<BR>'
-#             '<i>Period Taken: </i>' +
-#             str(round(first_quarter_shot[i], 2)) + ' (period taken)<BR>'
-#             '<i>Field Goals Made: </i>' +
-#             str(round(first_quarter_shot_FGM[i], 3)) + ' (FGM)<BR>'
-#             '<i>Field Goals Attempted: </i>' +
-#             str(round(first_quarter_shot_FGA[i], 4)) + ' (FGA)<BR>'
-#             '<i>Frequency: </i>' +
-#             str(round(first_quarter_shot_freq[i]
-#                       * 100, 5)) + '% (taken in 1st quarter)'
-#             for i in range(len(first_quarter_xlocs))
-#         ]
-#         first_quarter_player_shot_chart.add_trace(go.Scatter(
-#             x=first_quarter_xlocs, y=first_quarter_ylocs, mode='markers', name='markers', text=hexbin_text,
-#             marker=dict(
-#                 size=first_quarter_shot_freq, sizemode='area', sizeref=2. * max(first_quarter_shot_freq, default=0) / (11. ** 2), sizemin=2.5,
-#                 line=dict(width=1, color='#333333'), symbol='hexagon',
-#                 color=first_quarter_player_shot_accur, colorscale=colorscale,
-#                 colorbar=dict(
-#                     thickness=15,
-#                     x=0.75,
-#                     y=0.87,
-#                     yanchor='middle',
-#                     len=0.2,
-#                     title=dict(
-#                         text="<B>Accuracy</B>",
-#                         font=dict(
-#                             size=11,
-#                             color='#4d4d4d'
-#                         ),
-#                     ),
-#                     tickvals=[marker_cmin,
-#                               (marker_cmin + marker_cmax) / 2, marker_cmax],
-#                     ticktext=ticktexts,
-#                     tickfont=dict(
-#                         size=11,
-#                         color='#4d4d4d'
-#                     )
-#                 ),
-#                 cmin=marker_cmin, cmax=marker_cmax,
-#             ),
-#             hoverinfo='text'
-#         ))
-
-#         # Scatter plot for displaying season 2nd quarter shot chart data
-#         second_quarter_averages_df = player_quarters_averages_df.loc[(
-#             player_quarters_averages_df['PERIOD'] == 2)]
-#         second_quarter_merged_df = pd.merge(filtered_player_shot_df, second_quarter_averages_df, how='inner', on=[
-#                                             'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE', 'PERIOD'])
-#         second_quarter_xlocs = second_quarter_merged_df['LOC_X'].tolist()
-#         second_quarter_ylocs = second_quarter_merged_df['LOC_Y'].tolist()
-#         second_quarter_shot_FGM = second_quarter_merged_df['FGM'].tolist()
-#         second_quarter_shot_FGA = second_quarter_merged_df['FGA'].tolist()
-#         second_quarter_shot_freq = second_quarter_merged_df['FREQ'].tolist()
-#         second_quarter_shot = second_quarter_merged_df['PERIOD'].tolist()
-#         second_quarter_player_shot_accur = second_quarter_merged_df['PLAYER_FG_PCT'].tolist(
-#         )
-#         second_quarter_player_shot_chart = go.Figure()
-#         draw_plotly_court(second_quarter_player_shot_chart)
-#         colorscale = 'RdYlBu_r'
-#         marker_cmin = 0.2
-#         marker_cmax = 0.6
-#         ticktexts = ["Below 40%", "40%", "Above 40%"]
-#         hexbin_text = [
-#             '<i>Player Accuracy: </i>' +
-#             str(round(
-#                 second_quarter_player_shot_accur[i]*100, 1)) + '% (player avg)<BR>'
-#             '<i>Period Taken: </i>' +
-#             str(round(second_quarter_shot[i], 2)) + ' (period taken)<BR>'
-#             '<i>Field Goals Made: </i>' +
-#             str(round(second_quarter_shot_FGM[i], 3)) + ' (FGM)<BR>'
-#             '<i>Field Goals Attempted: </i>' +
-#             str(round(second_quarter_shot_FGA[i], 4)) + ' (FGA)<BR>'
-#             '<i>Frequency: </i>' +
-#             str(round(second_quarter_shot_freq[i]
-#                       * 100, 5)) + '% (taken in 2nd quarter)'
-#             for i in range(len(second_quarter_xlocs))
-#         ]
-#         second_quarter_player_shot_chart.add_trace(go.Scatter(
-#             x=second_quarter_xlocs, y=second_quarter_ylocs, mode='markers', name='markers', text=hexbin_text,
-#             marker=dict(
-#                 size=second_quarter_shot_freq, sizemode='area', sizeref=2. * max(second_quarter_shot_freq, default=0) / (11. ** 2), sizemin=2.5,
-#                 line=dict(width=1, color='#333333'), symbol='hexagon',
-#                 color=second_quarter_player_shot_accur, colorscale=colorscale,
-#                 colorbar=dict(
-#                     thickness=15,
-#                     x=0.75,
-#                     y=0.87,
-#                     yanchor='middle',
-#                     len=0.2,
-#                     title=dict(
-#                         text="<B>Accuracy</B>",
-#                         font=dict(
-#                             size=11,
-#                             color='#4d4d4d'
-#                         ),
-#                     ),
-#                     tickvals=[marker_cmin,
-#                               (marker_cmin + marker_cmax) / 2, marker_cmax],
-#                     ticktext=ticktexts,
-#                     tickfont=dict(
-#                         size=11,
-#                         color='#4d4d4d'
-#                     )
-#                 ),
-#                 cmin=marker_cmin, cmax=marker_cmax,
-#             ),
-#             hoverinfo='text'
-#         ))
-
-#         # Scatter plot for displaying season 3rd quarter shot chart data
-#         third_quarter_averages_df = player_quarters_averages_df.loc[(
-#             player_quarters_averages_df['PERIOD'] == 3)]
-#         third_quarter_merged_df = pd.merge(filtered_player_shot_df, third_quarter_averages_df, how='inner', on=[
-#                                            'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE', 'PERIOD'])
-#         third_quarter_xlocs = third_quarter_merged_df['LOC_X'].tolist()
-#         third_quarter_ylocs = third_quarter_merged_df['LOC_Y'].tolist()
-#         third_quarter_shot_FGM = third_quarter_merged_df['FGM'].tolist()
-#         third_quarter_shot_FGA = third_quarter_merged_df['FGA'].tolist()
-#         third_quarter_shot_freq = third_quarter_merged_df['FREQ'].tolist()
-#         third_quarter_shot = third_quarter_merged_df['PERIOD'].tolist()
-#         third_quarter_player_shot_accur = third_quarter_merged_df['PLAYER_FG_PCT'].tolist(
-#         )
-#         third_quarter_player_shot_chart = go.Figure()
-#         draw_plotly_court(third_quarter_player_shot_chart)
-#         colorscale = 'RdYlBu_r'
-#         marker_cmin = 0.2
-#         marker_cmax = 0.6
-#         ticktexts = ["Below 40%", "40%", "Above 40%"]
-#         hexbin_text = [
-#             '<i>Player Accuracy: </i>' +
-#             str(round(
-#                 third_quarter_player_shot_accur[i]*100, 1)) + '% (player avg)<BR>'
-#             '<i>Period Taken: </i>' +
-#             str(round(third_quarter_shot[i], 2)) + ' (period taken)<BR>'
-#             '<i>Field Goals Made: </i>' +
-#             str(round(third_quarter_shot_FGM[i], 3)) + ' (FGM)<BR>'
-#             '<i>Field Goals Attempted: </i>' +
-#             str(round(third_quarter_shot_FGA[i], 4)) + ' (FGA)<BR>'
-#             '<i>Frequency: </i>' +
-#             str(round(third_quarter_shot_freq[i]
-#                       * 100, 5)) + '% (taken in 3rd quarter)'
-#             for i in range(len(third_quarter_xlocs))
-#         ]
-#         third_quarter_player_shot_chart.add_trace(go.Scatter(
-#             x=third_quarter_xlocs, y=third_quarter_ylocs, mode='markers', name='markers', text=hexbin_text,
-#             marker=dict(
-#                 size=third_quarter_shot_freq, sizemode='area', sizeref=2. * max(third_quarter_shot_freq, default=0) / (11. ** 2), sizemin=2.5,
-#                 line=dict(width=1, color='#333333'), symbol='hexagon',
-#                 color=third_quarter_player_shot_accur, colorscale=colorscale,
-#                 colorbar=dict(
-#                     thickness=15,
-#                     x=0.75,
-#                     y=0.87,
-#                     yanchor='middle',
-#                     len=0.2,
-#                     title=dict(
-#                         text="<B>Accuracy</B>",
-#                         font=dict(
-#                             size=11,
-#                             color='#4d4d4d'
-#                         ),
-#                     ),
-#                     tickvals=[marker_cmin,
-#                               (marker_cmin + marker_cmax) / 2, marker_cmax],
-#                     ticktext=ticktexts,
-#                     tickfont=dict(
-#                         size=11,
-#                         color='#4d4d4d'
-#                     )
-#                 ),
-#                 cmin=marker_cmin, cmax=marker_cmax,
-#             ),
-#             hoverinfo='text'
-#         ))
-
-#         # Scatter plot for displaying season 4th quarter shot chart data
-#         fourth_quarter_averages_df = player_quarters_averages_df.loc[(
-#             player_quarters_averages_df['PERIOD'] == 4)]
-#         fourth_quarter_merged_df = pd.merge(filtered_player_shot_df, fourth_quarter_averages_df, how='inner', on=[
-#                                             'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE', 'PERIOD'])
-#         fourth_quarter_xlocs = fourth_quarter_merged_df['LOC_X'].tolist()
-#         fourth_quarter_ylocs = fourth_quarter_merged_df['LOC_Y'].tolist()
-#         fourth_quarter_shot_FGM = fourth_quarter_merged_df['FGM'].tolist()
-#         fourth_quarter_shot_FGA = fourth_quarter_merged_df['FGA'].tolist()
-#         fourth_quarter_shot_freq = fourth_quarter_merged_df['FREQ'].tolist()
-#         fourth_quarter_shot = fourth_quarter_merged_df['PERIOD'].tolist()
-#         fourth_quarter_player_shot_accur = fourth_quarter_merged_df['PLAYER_FG_PCT'].tolist(
-#         )
-#         fourth_quarter_player_shot_chart = go.Figure()
-#         draw_plotly_court(fourth_quarter_player_shot_chart)
-#         colorscale = 'RdYlBu_r'
-#         marker_cmin = 0.2
-#         marker_cmax = 0.6
-#         ticktexts = ["Below 40%", "40%", "Above 40%"]
-#         hexbin_text = [
-#             '<i>Player Accuracy: </i>' +
-#             str(round(
-#                 fourth_quarter_player_shot_accur[i]*100, 1)) + '% (player avg)<BR>'
-#             '<i>Period Taken: </i>' +
-#             str(round(fourth_quarter_shot[i], 2)) + ' (period taken)<BR>'
-#             '<i>Field Goals Made: </i>' +
-#             str(round(fourth_quarter_shot_FGM[i], 3)) + ' (FGM)<BR>'
-#             '<i>Field Goals Attempted: </i>' +
-#             str(round(fourth_quarter_shot_FGA[i], 4)) + ' (FGA)<BR>'
-#             '<i>Frequency: </i>' +
-#             str(round(fourth_quarter_shot_freq[i]
-#                       * 100, 5)) + '% (taken in 4th quarter)'
-#             for i in range(len(fourth_quarter_xlocs))
-#         ]
-#         fourth_quarter_player_shot_chart.add_trace(go.Scatter(
-#             x=fourth_quarter_xlocs, y=fourth_quarter_ylocs, mode='markers', name='markers', text=hexbin_text,
-#             marker=dict(
-#                 size=fourth_quarter_shot_freq, sizemode='area', sizeref=2. * max(fourth_quarter_shot_freq, default=0) / (11. ** 2), sizemin=2.5,
-#                 line=dict(width=1, color='#333333'), symbol='hexagon',
-#                 color=fourth_quarter_player_shot_accur, colorscale=colorscale,
-#                 colorbar=dict(
-#                     thickness=15,
-#                     x=0.75,
-#                     y=0.87,
-#                     yanchor='middle',
-#                     len=0.2,
-#                     title=dict(
-#                         text="<B>Accuracy</B>",
-#                         font=dict(
-#                             size=11,
-#                             color='#4d4d4d'
-#                         ),
-#                     ),
-#                     tickvals=[marker_cmin,
-#                               (marker_cmin + marker_cmax) / 2, marker_cmax],
-#                     ticktext=ticktexts,
-#                     tickfont=dict(
-#                         size=11,
-#                         color='#4d4d4d'
-#                     )
-#                 ),
-#                 cmin=marker_cmin, cmax=marker_cmax,
-#             ),
-#             hoverinfo='text'
-#         ))
-
-#         shot_distance_pct_fig = px.line(
-#             player_distance_averages_df, x="SHOT_DISTANCE", y="PLAYER_FG_PCT")
-
-#         return [
-#             html.Div(children='''
-#                                 Player Shot Chart Data for the
-#                                '''
-#                      + season + ' Season',
-#                      style={
-#                          'textAlign': 'center'
-#                      }),
-
-#             html.Div([
-#                 dcc.Graph(figure=season_player_shot_chart),
-#             ]
-#             ),
-#             html.Div(children='''
-#                                 Player Shot Chart 1st Quarter Data
-#                                ''',
-#                      style={
-#                          'textAlign': 'center'
-#                      }),
-
-#             html.Div([
-#                 dcc.Graph(figure=first_quarter_player_shot_chart),
-#             ]
-#             ),
-#             html.Div(children='''
-#                                 Player Shot Chart 2nd Quarter Data
-#                                ''',
-#                      style={
-#                          'textAlign': 'center'
-#                      }),
-
-#             html.Div([
-#                 dcc.Graph(figure=second_quarter_player_shot_chart),
-#             ]
-#             ),
-#             html.Div(children='''
-#                                 Player Shot Chart 3rd Quarter Data
-#                                ''',
-#                      style={
-#                          'textAlign': 'center'
-#                      }),
-
-#             html.Div([
-#                 dcc.Graph(figure=third_quarter_player_shot_chart),
-#             ]
-#             ),
-#             html.Div(children='''
-#                                 Player Shot Chart 4th Quarter Data
-#                                ''',
-#                      style={
-#                          'textAlign': 'center'
-#                      }),
-
-#             html.Div([
-#                 dcc.Graph(figure=fourth_quarter_player_shot_chart),
-#             ]
-#             ),
-#             html.Div(children='''
-#                                 Player Shot Distance Data
-#                                ''',
-#                      style={
-#                          'textAlign': 'center'
-#                      }),
-
-#             html.Div([
-#                 dcc.Graph(figure=shot_distance_pct_fig),
-#             ]
-#             ),
-#         ]
-
-
-# Callback updates value for people-dropdown based on team selected
-# @app.callback(
-#     Output('team-dropdown', 'value'),
-#     [Input('team-dropdown', 'options')])
-# def set_team_value(available_options):
-#     print('set team value')
-#     return available_options[0]['value']
-
-# Callback updates value for people-dropdown based on player selected
-
-
-# @app.callback(
-#     Output('player-dropdown', 'value'),
-#     [Input('player-dropdown', 'options')])
-# def set_player_value(available_options):
-#     print('set player value')
-#     return available_options[0]['value']
-
 
 if __name__ == '__main__':
     app.run_server(debug=True)
