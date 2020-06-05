@@ -78,7 +78,6 @@ for player in players_nba[:5]:
 # print(filtered_player_shot_df)
 # ======================================================================================================= #
 
-
 def build_tabs():
     return html.Div(
         id="tabs",
@@ -108,32 +107,31 @@ def build_tabs():
         ],
     )
 
-
 def build_team_tab():
     team_options = set_people_dropdown_options('Team')
     marks_year_slider = {0: '1996-97',
-             1: '1997-98',
-             2: '1998-99',
-             3: '1999-00',
-             4: '2000-01',
-             5: '2001-02',
-             6: '2002-03',
-             7: '2003-04',
-             8: '2004-05',
-             9: '2005-06',
-             10: '2006-07',
-             11: '2007-08',
-             12: '2008-09',
-             13: '2009-10',
-             14: '2010-11',
-             15: '2011-12',
-             16: '2012-13',
-             17: '2013-14',
-             18: '2014-15',
-             19: '2015-16',
-             20: '2016-17',
-             21: '2017-18',
-             22: '2018-19', }
+                         1: '1997-98',
+                         2: '1998-99',
+                         3: '1999-00',
+                         4: '2000-01',
+                         5: '2001-02',
+                         6: '2002-03',
+                         7: '2003-04',
+                         8: '2004-05',
+                         9: '2005-06',
+                         10: '2006-07',
+                         11: '2007-08',
+                         12: '2008-09',
+                         13: '2009-10',
+                         14: '2010-11',
+                         15: '2011-12',
+                         16: '2012-13',
+                         17: '2013-14',
+                         18: '2014-15',
+                         19: '2015-16',
+                         20: '2016-17',
+                         21: '2017-18',
+                         22: '2018-19', }
     min_year_slider = 0
     max_year_slider = 22
     value_year_slider = 0
@@ -152,32 +150,31 @@ def build_team_tab():
         ])
     ]
 
-
 def build_player_tab():
     player_options = set_people_dropdown_options('Player')
     marks_year_slider = {0: '1996-97',
-             1: '1997-98',
-             2: '1998-99',
-             3: '1999-00',
-             4: '2000-01',
-             5: '2001-02',
-             6: '2002-03',
-             7: '2003-04',
-             8: '2004-05',
-             9: '2005-06',
-             10: '2006-07',
-             11: '2007-08',
-             12: '2008-09',
-             13: '2009-10',
-             14: '2010-11',
-             15: '2011-12',
-             16: '2012-13',
-             17: '2013-14',
-             18: '2014-15',
-             19: '2015-16',
-             20: '2016-17',
-             21: '2017-18',
-             22: '2018-19', }
+                         1: '1997-98',
+                         2: '1998-99',
+                         3: '1999-00',
+                         4: '2000-01',
+                         5: '2001-02',
+                         6: '2002-03',
+                         7: '2003-04',
+                         8: '2004-05',
+                         9: '2005-06',
+                         10: '2006-07',
+                         11: '2007-08',
+                         12: '2008-09',
+                         13: '2009-10',
+                         14: '2010-11',
+                         15: '2011-12',
+                         16: '2012-13',
+                         17: '2013-14',
+                         18: '2014-15',
+                         19: '2015-16',
+                         20: '2016-17',
+                         21: '2017-18',
+                         22: '2018-19', }
     min_year_slider = 0
     max_year_slider = 22
     value_year_slider = 0
@@ -211,7 +208,6 @@ def build_player_tab():
             html.Div(id='player-tab-content')
         ])
     ]
-
 
 def draw_plotly_court(fig, fig_width=600, margins=10):
     # From: https://community.plot.ly/t/arc-shape-with-path/7205/5
@@ -374,7 +370,6 @@ def draw_plotly_court(fig, fig_width=600, margins=10):
         ]
     )
     return True
-
 
 def generate_team_shotchart_averages(team_id, season):
     # Goal : Generate team's shot chart averages for each zone
@@ -674,6 +669,7 @@ def set_people_dropdown_options(group):
         for player in nba_players:
             nba_player_list.append(player['full_name'])
         return [{'label': i, 'value': i} for i in nba_player_list]
+
 
 # ======================================================================================================= #
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -1003,7 +999,6 @@ def update_team_tab(team_selected, year_selected_key, year_marks):
         ], className="row")
     ]
 
-
 # Callback updates player tab content based on player selected
 @app.callback(
     Output('player-tab-content', 'children'),
@@ -1036,330 +1031,331 @@ def update_statsgraph_figure(player_selected, year_selected_key, year_marks, sho
     data_columns = ['SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA',
                     'SHOT_ZONE_RANGE', 'SHOT_DISTANCE', 'LOC_X', 'LOC_Y', 'PERIOD']
     filtered_player_shot_df = player_shot_df[data_columns]
+    player_shot_chart = go.Figure()
 
     # Season Data
-    season_merged_df = pd.merge(filtered_player_shot_df, player_zone_averages_df, how='inner', on=[
-        'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE'])
-    season_xlocs = season_merged_df['LOC_X'].tolist()
-    season_ylocs = season_merged_df['LOC_Y'].tolist()
-    season_shot_freq = season_merged_df['FREQ'].tolist()
-    season_rel_shot_accur = season_merged_df['RELATIVE_FG_PCT'].tolist()
-    season_league_shot_accur = season_merged_df['LEAGUE_FG_PCT'].tolist()
-    season_player_shot_accur = season_merged_df['PLAYER_FG_PCT'].tolist()
-    season_player_shot_chart = go.Figure()
-    draw_plotly_court(season_player_shot_chart)
-    colorscale = 'RdYlBu_r'
-    marker_cmin = -0.05
-    marker_cmax = 0.05
-    ticktexts = ["Below Average", "Average", "Above Average"]
-    hexbin_text = [
-        '<i>Relative Accuracy: </i>' +
-        str(round(season_rel_shot_accur[i]
-                  * 100, 1)) + '% (vs league avg)<BR>'
-        '<i>Player Accuracy: </i>' +
-        str(round(season_player_shot_accur[i]
-                  * 100, 2)) + '% (player avg)<BR>'
-        '<i>League Accuracy: </i>' +
-        str(round(season_league_shot_accur[i]
-                  * 100, 3)) + '% (league avg)<BR>'
-        '<i>Frequency: </i>' + str(round(season_shot_freq[i]*100, 4)) + '%'
-        for i in range(len(season_shot_freq))
-    ]
-    season_player_shot_chart.add_trace(go.Scatter(
-        x=season_xlocs, y=season_ylocs, mode='markers', name='markers', text=hexbin_text,
-        marker=dict(
-            size=season_shot_freq, sizemode='area', sizeref=2. * max(season_shot_freq, default=0) / (11. ** 2), sizemin=2.5,
-            line=dict(width=1, color='#333333'), symbol='hexagon',
-            color=season_rel_shot_accur, colorscale=colorscale,
-            colorbar=dict(
-                thickness=15,
-                x=0.75,
-                y=0.87,
-                yanchor='middle',
-                len=0.2,
-                title=dict(
-                    text="<B>Accuracy</B>",
-                    font=dict(
+    if(shot_filter == 'season'):
+        season_merged_df = pd.merge(filtered_player_shot_df, player_zone_averages_df, how='inner', on=[
+                                    'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE'])
+        season_xlocs = season_merged_df['LOC_X'].tolist()
+        season_ylocs = season_merged_df['LOC_Y'].tolist()
+        season_shot_freq = season_merged_df['FREQ'].tolist()
+        season_rel_shot_accur = season_merged_df['RELATIVE_FG_PCT'].tolist()
+        season_league_shot_accur = season_merged_df['LEAGUE_FG_PCT'].tolist()
+        season_player_shot_accur = season_merged_df['PLAYER_FG_PCT'].tolist()
+        draw_plotly_court(player_shot_chart)
+        colorscale = 'RdYlBu_r'
+        marker_cmin = -0.05
+        marker_cmax = 0.05
+        ticktexts = ["Below Average", "Average", "Above Average"]
+        hexbin_text = [
+            '<i>Relative Accuracy: </i>' +
+            str(round(season_rel_shot_accur[i]
+                      * 100, 1)) + '% (vs league avg)<BR>'
+            '<i>Player Accuracy: </i>' +
+            str(round(season_player_shot_accur[i]
+                      * 100, 2)) + '% (player avg)<BR>'
+            '<i>League Accuracy: </i>' +
+            str(round(season_league_shot_accur[i]
+                      * 100, 3)) + '% (league avg)<BR>'
+            '<i>Frequency: </i>' + str(round(season_shot_freq[i]*100, 4)) + '%'
+            for i in range(len(season_shot_freq))
+        ]
+        player_shot_chart.add_trace(go.Scatter(
+            x=season_xlocs, y=season_ylocs, mode='markers', name='markers', text=hexbin_text,
+            marker=dict(
+                size=season_shot_freq, sizemode='area', sizeref=2. * max(season_shot_freq, default=0) / (11. ** 2), sizemin=2.5,
+                line=dict(width=1, color='#333333'), symbol='hexagon',
+                color=season_rel_shot_accur, colorscale=colorscale,
+                colorbar=dict(
+                    thickness=15,
+                    x=0.75,
+                    y=0.87,
+                    yanchor='middle',
+                    len=0.2,
+                    title=dict(
+                        text="<B>Accuracy</B>",
+                        font=dict(
+                            size=11,
+                            color='#4d4d4d'
+                        ),
+                    ),
+                    tickvals=[marker_cmin,
+                              (marker_cmin + marker_cmax) / 2, marker_cmax],
+                    ticktext=ticktexts,
+                    tickfont=dict(
                         size=11,
                         color='#4d4d4d'
-                    ),
+                    )
                 ),
-                tickvals=[marker_cmin,
-                          (marker_cmin + marker_cmax) / 2, marker_cmax],
-                ticktext=ticktexts,
-                tickfont=dict(
-                    size=11,
-                    color='#4d4d4d'
-                )
+                cmin=marker_cmin, cmax=marker_cmax,
             ),
-            cmin=marker_cmin, cmax=marker_cmax,
-        ),
-        hoverinfo='text'
-    ))
+            hoverinfo='text'
+        ))
 
     # Scatter plot for displaying season 1st quarter shot chart data
-    first_quarter_averages_df = player_quarters_averages_df.loc[(
-        player_quarters_averages_df['PERIOD'] == 1)]
-    first_quarter_merged_df = pd.merge(filtered_player_shot_df, first_quarter_averages_df, how='inner', on=[
-        'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE', 'PERIOD'])
-    first_quarter_xlocs = first_quarter_merged_df['LOC_X'].tolist()
-    first_quarter_ylocs = first_quarter_merged_df['LOC_Y'].tolist()
-    first_quarter_shot_FGM = first_quarter_merged_df['FGM'].tolist()
-    first_quarter_shot_FGA = first_quarter_merged_df['FGA'].tolist()
-    first_quarter_shot_freq = first_quarter_merged_df['FREQ'].tolist()
-    first_quarter_shot = first_quarter_merged_df['PERIOD'].tolist()
-    first_quarter_player_shot_accur = first_quarter_merged_df['PLAYER_FG_PCT'].tolist(
-    )
-    first_quarter_player_shot_chart = go.Figure()
-    draw_plotly_court(first_quarter_player_shot_chart)
-    colorscale = 'RdYlBu_r'
-    marker_cmin = 0.2
-    marker_cmax = 0.6
-    ticktexts = ["Below 40%", "40%", "Above 40%"]
-    hexbin_text = [
-        '<i>Player Accuracy: </i>' +
-        str(round(
-            first_quarter_player_shot_accur[i]*100, 1)) + '% (player avg)<BR>'
-        '<i>Period Taken: </i>' +
-        str(round(first_quarter_shot[i], 2)) + ' (period taken)<BR>'
-        '<i>Field Goals Made: </i>' +
-        str(round(first_quarter_shot_FGM[i], 3)) + ' (FGM)<BR>'
-        '<i>Field Goals Attempted: </i>' +
-        str(round(first_quarter_shot_FGA[i], 4)) + ' (FGA)<BR>'
-        '<i>Frequency: </i>' +
-        str(round(first_quarter_shot_freq[i]
-                  * 100, 5)) + '% (taken in 1st quarter)'
-        for i in range(len(first_quarter_xlocs))
-    ]
-    first_quarter_player_shot_chart.add_trace(go.Scatter(
-        x=first_quarter_xlocs, y=first_quarter_ylocs, mode='markers', name='markers', text=hexbin_text,
-        marker=dict(
-            size=first_quarter_shot_freq, sizemode='area', sizeref=2. * max(first_quarter_shot_freq, default=0) / (11. ** 2), sizemin=2.5,
-            line=dict(width=1, color='#333333'), symbol='hexagon',
-            color=first_quarter_player_shot_accur, colorscale=colorscale,
-            colorbar=dict(
-                thickness=15,
-                x=0.75,
-                y=0.87,
-                yanchor='middle',
-                len=0.2,
-                title=dict(
-                    text="<B>Accuracy</B>",
-                    font=dict(
+    if(shot_filter == 'first'):
+        first_quarter_averages_df = player_quarters_averages_df.loc[(
+            player_quarters_averages_df['PERIOD'] == 1)]
+        first_quarter_merged_df = pd.merge(filtered_player_shot_df, first_quarter_averages_df, how='inner', on=[
+            'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE', 'PERIOD'])
+        first_quarter_xlocs = first_quarter_merged_df['LOC_X'].tolist()
+        first_quarter_ylocs = first_quarter_merged_df['LOC_Y'].tolist()
+        first_quarter_shot_FGM = first_quarter_merged_df['FGM'].tolist()
+        first_quarter_shot_FGA = first_quarter_merged_df['FGA'].tolist()
+        first_quarter_shot_freq = first_quarter_merged_df['FREQ'].tolist()
+        first_quarter_shot = first_quarter_merged_df['PERIOD'].tolist()
+        first_quarter_player_shot_accur = first_quarter_merged_df['PLAYER_FG_PCT'].tolist(
+        )
+        draw_plotly_court(player_shot_chart)
+        colorscale = 'RdYlBu_r'
+        marker_cmin = 0.2
+        marker_cmax = 0.6
+        ticktexts = ["Below 40%", "40%", "Above 40%"]
+        hexbin_text = [
+            '<i>Player Accuracy: </i>' +
+            str(round(
+                first_quarter_player_shot_accur[i]*100, 1)) + '% (player avg)<BR>'
+            '<i>Period Taken: </i>' +
+            str(round(first_quarter_shot[i], 2)) + ' (period taken)<BR>'
+            '<i>Field Goals Made: </i>' +
+            str(round(first_quarter_shot_FGM[i], 3)) + ' (FGM)<BR>'
+            '<i>Field Goals Attempted: </i>' +
+            str(round(first_quarter_shot_FGA[i], 4)) + ' (FGA)<BR>'
+            '<i>Frequency: </i>' +
+            str(round(first_quarter_shot_freq[i]
+                    * 100, 5)) + '% (taken in 1st quarter)'
+            for i in range(len(first_quarter_xlocs))
+        ]
+        player_shot_chart.add_trace(go.Scatter(
+            x=first_quarter_xlocs, y=first_quarter_ylocs, mode='markers', name='markers', text=hexbin_text,
+            marker=dict(
+                size=first_quarter_shot_freq, sizemode='area', sizeref=2. * max(first_quarter_shot_freq, default=0) / (11. ** 2), sizemin=2.5,
+                line=dict(width=1, color='#333333'), symbol='hexagon',
+                color=first_quarter_player_shot_accur, colorscale=colorscale,
+                colorbar=dict(
+                    thickness=15,
+                    x=0.75,
+                    y=0.87,
+                    yanchor='middle',
+                    len=0.2,
+                    title=dict(
+                        text="<B>Accuracy</B>",
+                        font=dict(
+                            size=11,
+                            color='#4d4d4d'
+                        ),
+                    ),
+                    tickvals=[marker_cmin,
+                            (marker_cmin + marker_cmax) / 2, marker_cmax],
+                    ticktext=ticktexts,
+                    tickfont=dict(
                         size=11,
                         color='#4d4d4d'
-                    ),
+                    )
                 ),
-                tickvals=[marker_cmin,
-                          (marker_cmin + marker_cmax) / 2, marker_cmax],
-                ticktext=ticktexts,
-                tickfont=dict(
-                    size=11,
-                    color='#4d4d4d'
-                )
+                cmin=marker_cmin, cmax=marker_cmax,
             ),
-            cmin=marker_cmin, cmax=marker_cmax,
-        ),
-        hoverinfo='text'
-    ))
+            hoverinfo='text'
+        ))
 
     # Scatter plot for displaying season 2nd quarter shot chart data
-    second_quarter_averages_df = player_quarters_averages_df.loc[(
-        player_quarters_averages_df['PERIOD'] == 2)]
-    second_quarter_merged_df = pd.merge(filtered_player_shot_df, second_quarter_averages_df, how='inner', on=[
-        'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE', 'PERIOD'])
-    second_quarter_xlocs = second_quarter_merged_df['LOC_X'].tolist()
-    second_quarter_ylocs = second_quarter_merged_df['LOC_Y'].tolist()
-    second_quarter_shot_FGM = second_quarter_merged_df['FGM'].tolist()
-    second_quarter_shot_FGA = second_quarter_merged_df['FGA'].tolist()
-    second_quarter_shot_freq = second_quarter_merged_df['FREQ'].tolist()
-    second_quarter_shot = second_quarter_merged_df['PERIOD'].tolist()
-    second_quarter_player_shot_accur = second_quarter_merged_df['PLAYER_FG_PCT'].tolist(
-    )
-    second_quarter_player_shot_chart = go.Figure()
-    draw_plotly_court(second_quarter_player_shot_chart)
-    colorscale = 'RdYlBu_r'
-    marker_cmin = 0.2
-    marker_cmax = 0.6
-    ticktexts = ["Below 40%", "40%", "Above 40%"]
-    hexbin_text = [
-        '<i>Player Accuracy: </i>' +
-        str(round(
-            second_quarter_player_shot_accur[i]*100, 1)) + '% (player avg)<BR>'
-        '<i>Period Taken: </i>' +
-        str(round(second_quarter_shot[i], 2)) + ' (period taken)<BR>'
-        '<i>Field Goals Made: </i>' +
-        str(round(second_quarter_shot_FGM[i], 3)) + ' (FGM)<BR>'
-        '<i>Field Goals Attempted: </i>' +
-        str(round(second_quarter_shot_FGA[i], 4)) + ' (FGA)<BR>'
-        '<i>Frequency: </i>' +
-        str(round(second_quarter_shot_freq[i]
-                  * 100, 5)) + '% (taken in 2nd quarter)'
-        for i in range(len(second_quarter_xlocs))
-    ]
-    second_quarter_player_shot_chart.add_trace(go.Scatter(
-        x=second_quarter_xlocs, y=second_quarter_ylocs, mode='markers', name='markers', text=hexbin_text,
-        marker=dict(
-            size=second_quarter_shot_freq, sizemode='area', sizeref=2. * max(second_quarter_shot_freq, default=0) / (11. ** 2), sizemin=2.5,
-            line=dict(width=1, color='#333333'), symbol='hexagon',
-            color=second_quarter_player_shot_accur, colorscale=colorscale,
-            colorbar=dict(
-                thickness=15,
-                x=0.75,
-                y=0.87,
-                yanchor='middle',
-                len=0.2,
-                title=dict(
-                    text="<B>Accuracy</B>",
-                    font=dict(
+    if(shot_filter == 'second'):
+        second_quarter_averages_df = player_quarters_averages_df.loc[(
+            player_quarters_averages_df['PERIOD'] == 2)]
+        second_quarter_merged_df = pd.merge(filtered_player_shot_df, second_quarter_averages_df, how='inner', on=[
+            'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE', 'PERIOD'])
+        second_quarter_xlocs = second_quarter_merged_df['LOC_X'].tolist()
+        second_quarter_ylocs = second_quarter_merged_df['LOC_Y'].tolist()
+        second_quarter_shot_FGM = second_quarter_merged_df['FGM'].tolist()
+        second_quarter_shot_FGA = second_quarter_merged_df['FGA'].tolist()
+        second_quarter_shot_freq = second_quarter_merged_df['FREQ'].tolist()
+        second_quarter_shot = second_quarter_merged_df['PERIOD'].tolist()
+        second_quarter_player_shot_accur = second_quarter_merged_df['PLAYER_FG_PCT'].tolist(
+        )
+        draw_plotly_court(player_shot_chart)
+        colorscale = 'RdYlBu_r'
+        marker_cmin = 0.2
+        marker_cmax = 0.6
+        ticktexts = ["Below 40%", "40%", "Above 40%"]
+        hexbin_text = [
+            '<i>Player Accuracy: </i>' +
+            str(round(
+                second_quarter_player_shot_accur[i]*100, 1)) + '% (player avg)<BR>'
+            '<i>Period Taken: </i>' +
+            str(round(second_quarter_shot[i], 2)) + ' (period taken)<BR>'
+            '<i>Field Goals Made: </i>' +
+            str(round(second_quarter_shot_FGM[i], 3)) + ' (FGM)<BR>'
+            '<i>Field Goals Attempted: </i>' +
+            str(round(second_quarter_shot_FGA[i], 4)) + ' (FGA)<BR>'
+            '<i>Frequency: </i>' +
+            str(round(second_quarter_shot_freq[i]
+                    * 100, 5)) + '% (taken in 2nd quarter)'
+            for i in range(len(second_quarter_xlocs))
+        ]
+        player_shot_chart.add_trace(go.Scatter(
+            x=second_quarter_xlocs, y=second_quarter_ylocs, mode='markers', name='markers', text=hexbin_text,
+            marker=dict(
+                size=second_quarter_shot_freq, sizemode='area', sizeref=2. * max(second_quarter_shot_freq, default=0) / (11. ** 2), sizemin=2.5,
+                line=dict(width=1, color='#333333'), symbol='hexagon',
+                color=second_quarter_player_shot_accur, colorscale=colorscale,
+                colorbar=dict(
+                    thickness=15,
+                    x=0.75,
+                    y=0.87,
+                    yanchor='middle',
+                    len=0.2,
+                    title=dict(
+                        text="<B>Accuracy</B>",
+                        font=dict(
+                            size=11,
+                            color='#4d4d4d'
+                        ),
+                    ),
+                    tickvals=[marker_cmin,
+                            (marker_cmin + marker_cmax) / 2, marker_cmax],
+                    ticktext=ticktexts,
+                    tickfont=dict(
                         size=11,
                         color='#4d4d4d'
-                    ),
+                    )
                 ),
-                tickvals=[marker_cmin,
-                          (marker_cmin + marker_cmax) / 2, marker_cmax],
-                ticktext=ticktexts,
-                tickfont=dict(
-                    size=11,
-                    color='#4d4d4d'
-                )
+                cmin=marker_cmin, cmax=marker_cmax,
             ),
-            cmin=marker_cmin, cmax=marker_cmax,
-        ),
-        hoverinfo='text'
-    ))
+            hoverinfo='text'
+        ))
 
     # Scatter plot for displaying season 3rd quarter shot chart data
-    third_quarter_averages_df = player_quarters_averages_df.loc[(
-        player_quarters_averages_df['PERIOD'] == 3)]
-    third_quarter_merged_df = pd.merge(filtered_player_shot_df, third_quarter_averages_df, how='inner', on=[
-        'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE', 'PERIOD'])
-    third_quarter_xlocs = third_quarter_merged_df['LOC_X'].tolist()
-    third_quarter_ylocs = third_quarter_merged_df['LOC_Y'].tolist()
-    third_quarter_shot_FGM = third_quarter_merged_df['FGM'].tolist()
-    third_quarter_shot_FGA = third_quarter_merged_df['FGA'].tolist()
-    third_quarter_shot_freq = third_quarter_merged_df['FREQ'].tolist()
-    third_quarter_shot = third_quarter_merged_df['PERIOD'].tolist()
-    third_quarter_player_shot_accur = third_quarter_merged_df['PLAYER_FG_PCT'].tolist(
-    )
-    third_quarter_player_shot_chart = go.Figure()
-    draw_plotly_court(third_quarter_player_shot_chart)
-    colorscale = 'RdYlBu_r'
-    marker_cmin = 0.2
-    marker_cmax = 0.6
-    ticktexts = ["Below 40%", "40%", "Above 40%"]
-    hexbin_text = [
-        '<i>Player Accuracy: </i>' +
-        str(round(
-            third_quarter_player_shot_accur[i]*100, 1)) + '% (player avg)<BR>'
-        '<i>Period Taken: </i>' +
-        str(round(third_quarter_shot[i], 2)) + ' (period taken)<BR>'
-        '<i>Field Goals Made: </i>' +
-        str(round(third_quarter_shot_FGM[i], 3)) + ' (FGM)<BR>'
-        '<i>Field Goals Attempted: </i>' +
-        str(round(third_quarter_shot_FGA[i], 4)) + ' (FGA)<BR>'
-        '<i>Frequency: </i>' +
-        str(round(third_quarter_shot_freq[i]
-                  * 100, 5)) + '% (taken in 3rd quarter)'
-        for i in range(len(third_quarter_xlocs))
-    ]
-    third_quarter_player_shot_chart.add_trace(go.Scatter(
-        x=third_quarter_xlocs, y=third_quarter_ylocs, mode='markers', name='markers', text=hexbin_text,
-        marker=dict(
-            size=third_quarter_shot_freq, sizemode='area', sizeref=2. * max(third_quarter_shot_freq, default=0) / (11. ** 2), sizemin=2.5,
-            line=dict(width=1, color='#333333'), symbol='hexagon',
-            color=third_quarter_player_shot_accur, colorscale=colorscale,
-            colorbar=dict(
-                thickness=15,
-                x=0.75,
-                y=0.87,
-                yanchor='middle',
-                len=0.2,
-                title=dict(
-                    text="<B>Accuracy</B>",
-                    font=dict(
+    if(shot_filter == 'third'):
+        third_quarter_averages_df = player_quarters_averages_df.loc[(
+            player_quarters_averages_df['PERIOD'] == 3)]
+        third_quarter_merged_df = pd.merge(filtered_player_shot_df, third_quarter_averages_df, how='inner', on=[
+            'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE', 'PERIOD'])
+        third_quarter_xlocs = third_quarter_merged_df['LOC_X'].tolist()
+        third_quarter_ylocs = third_quarter_merged_df['LOC_Y'].tolist()
+        third_quarter_shot_FGM = third_quarter_merged_df['FGM'].tolist()
+        third_quarter_shot_FGA = third_quarter_merged_df['FGA'].tolist()
+        third_quarter_shot_freq = third_quarter_merged_df['FREQ'].tolist()
+        third_quarter_shot = third_quarter_merged_df['PERIOD'].tolist()
+        third_quarter_player_shot_accur = third_quarter_merged_df['PLAYER_FG_PCT'].tolist(
+        )
+        draw_plotly_court(player_shot_chart)
+        colorscale = 'RdYlBu_r'
+        marker_cmin = 0.2
+        marker_cmax = 0.6
+        ticktexts = ["Below 40%", "40%", "Above 40%"]
+        hexbin_text = [
+            '<i>Player Accuracy: </i>' +
+            str(round(
+                third_quarter_player_shot_accur[i]*100, 1)) + '% (player avg)<BR>'
+            '<i>Period Taken: </i>' +
+            str(round(third_quarter_shot[i], 2)) + ' (period taken)<BR>'
+            '<i>Field Goals Made: </i>' +
+            str(round(third_quarter_shot_FGM[i], 3)) + ' (FGM)<BR>'
+            '<i>Field Goals Attempted: </i>' +
+            str(round(third_quarter_shot_FGA[i], 4)) + ' (FGA)<BR>'
+            '<i>Frequency: </i>' +
+            str(round(third_quarter_shot_freq[i]
+                    * 100, 5)) + '% (taken in 3rd quarter)'
+            for i in range(len(third_quarter_xlocs))
+        ]
+        player_shot_chart.add_trace(go.Scatter(
+            x=third_quarter_xlocs, y=third_quarter_ylocs, mode='markers', name='markers', text=hexbin_text,
+            marker=dict(
+                size=third_quarter_shot_freq, sizemode='area', sizeref=2. * max(third_quarter_shot_freq, default=0) / (11. ** 2), sizemin=2.5,
+                line=dict(width=1, color='#333333'), symbol='hexagon',
+                color=third_quarter_player_shot_accur, colorscale=colorscale,
+                colorbar=dict(
+                    thickness=15,
+                    x=0.75,
+                    y=0.87,
+                    yanchor='middle',
+                    len=0.2,
+                    title=dict(
+                        text="<B>Accuracy</B>",
+                        font=dict(
+                            size=11,
+                            color='#4d4d4d'
+                        ),
+                    ),
+                    tickvals=[marker_cmin,
+                            (marker_cmin + marker_cmax) / 2, marker_cmax],
+                    ticktext=ticktexts,
+                    tickfont=dict(
                         size=11,
                         color='#4d4d4d'
-                    ),
+                    )
                 ),
-                tickvals=[marker_cmin,
-                          (marker_cmin + marker_cmax) / 2, marker_cmax],
-                ticktext=ticktexts,
-                tickfont=dict(
-                    size=11,
-                    color='#4d4d4d'
-                )
+                cmin=marker_cmin, cmax=marker_cmax,
             ),
-            cmin=marker_cmin, cmax=marker_cmax,
-        ),
-        hoverinfo='text'
-    ))
+            hoverinfo='text'
+        ))
 
     # Scatter plot for displaying season 4th quarter shot chart data
-    fourth_quarter_averages_df = player_quarters_averages_df.loc[(
-        player_quarters_averages_df['PERIOD'] == 4)]
-    fourth_quarter_merged_df = pd.merge(filtered_player_shot_df, fourth_quarter_averages_df, how='inner', on=[
-        'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE', 'PERIOD'])
-    fourth_quarter_xlocs = fourth_quarter_merged_df['LOC_X'].tolist()
-    fourth_quarter_ylocs = fourth_quarter_merged_df['LOC_Y'].tolist()
-    fourth_quarter_shot_FGM = fourth_quarter_merged_df['FGM'].tolist()
-    fourth_quarter_shot_FGA = fourth_quarter_merged_df['FGA'].tolist()
-    fourth_quarter_shot_freq = fourth_quarter_merged_df['FREQ'].tolist()
-    fourth_quarter_shot = fourth_quarter_merged_df['PERIOD'].tolist()
-    fourth_quarter_player_shot_accur = fourth_quarter_merged_df['PLAYER_FG_PCT'].tolist(
-    )
-    fourth_quarter_player_shot_chart = go.Figure()
-    draw_plotly_court(fourth_quarter_player_shot_chart)
-    colorscale = 'RdYlBu_r'
-    marker_cmin = 0.2
-    marker_cmax = 0.6
-    ticktexts = ["Below 40%", "40%", "Above 40%"]
-    hexbin_text = [
-        '<i>Player Accuracy: </i>' +
-        str(round(
-            fourth_quarter_player_shot_accur[i]*100, 1)) + '% (player avg)<BR>'
-        '<i>Period Taken: </i>' +
-        str(round(fourth_quarter_shot[i], 2)) + ' (period taken)<BR>'
-        '<i>Field Goals Made: </i>' +
-        str(round(fourth_quarter_shot_FGM[i], 3)) + ' (FGM)<BR>'
-        '<i>Field Goals Attempted: </i>' +
-        str(round(fourth_quarter_shot_FGA[i], 4)) + ' (FGA)<BR>'
-        '<i>Frequency: </i>' +
-        str(round(fourth_quarter_shot_freq[i]
-                  * 100, 5)) + '% (taken in 4th quarter)'
-        for i in range(len(fourth_quarter_xlocs))
-    ]
-    fourth_quarter_player_shot_chart.add_trace(go.Scatter(
-        x=fourth_quarter_xlocs, y=fourth_quarter_ylocs, mode='markers', name='markers', text=hexbin_text,
-        marker=dict(
-            size=fourth_quarter_shot_freq, sizemode='area', sizeref=2. * max(fourth_quarter_shot_freq, default=0) / (11. ** 2), sizemin=2.5,
-            line=dict(width=1, color='#333333'), symbol='hexagon',
-            color=fourth_quarter_player_shot_accur, colorscale=colorscale,
-            colorbar=dict(
-                thickness=15,
-                x=0.75,
-                y=0.87,
-                yanchor='middle',
-                len=0.2,
-                title=dict(
-                    text="<B>Accuracy</B>",
-                    font=dict(
+    if(shot_filter == 'fourth'):
+        fourth_quarter_averages_df = player_quarters_averages_df.loc[(
+            player_quarters_averages_df['PERIOD'] == 4)]
+        fourth_quarter_merged_df = pd.merge(filtered_player_shot_df, fourth_quarter_averages_df, how='inner', on=[
+            'SHOT_ZONE_BASIC', 'SHOT_ZONE_AREA', 'SHOT_ZONE_RANGE', 'PERIOD'])
+        fourth_quarter_xlocs = fourth_quarter_merged_df['LOC_X'].tolist()
+        fourth_quarter_ylocs = fourth_quarter_merged_df['LOC_Y'].tolist()
+        fourth_quarter_shot_FGM = fourth_quarter_merged_df['FGM'].tolist()
+        fourth_quarter_shot_FGA = fourth_quarter_merged_df['FGA'].tolist()
+        fourth_quarter_shot_freq = fourth_quarter_merged_df['FREQ'].tolist()
+        fourth_quarter_shot = fourth_quarter_merged_df['PERIOD'].tolist()
+        fourth_quarter_player_shot_accur = fourth_quarter_merged_df['PLAYER_FG_PCT'].tolist(
+        )
+        draw_plotly_court(player_shot_chart)
+        colorscale = 'RdYlBu_r'
+        marker_cmin = 0.2
+        marker_cmax = 0.6
+        ticktexts = ["Below 40%", "40%", "Above 40%"]
+        hexbin_text = [
+            '<i>Player Accuracy: </i>' +
+            str(round(
+                fourth_quarter_player_shot_accur[i]*100, 1)) + '% (player avg)<BR>'
+            '<i>Period Taken: </i>' +
+            str(round(fourth_quarter_shot[i], 2)) + ' (period taken)<BR>'
+            '<i>Field Goals Made: </i>' +
+            str(round(fourth_quarter_shot_FGM[i], 3)) + ' (FGM)<BR>'
+            '<i>Field Goals Attempted: </i>' +
+            str(round(fourth_quarter_shot_FGA[i], 4)) + ' (FGA)<BR>'
+            '<i>Frequency: </i>' +
+            str(round(fourth_quarter_shot_freq[i]
+                    * 100, 5)) + '% (taken in 4th quarter)'
+            for i in range(len(fourth_quarter_xlocs))
+        ]
+        player_shot_chart.add_trace(go.Scatter(
+            x=fourth_quarter_xlocs, y=fourth_quarter_ylocs, mode='markers', name='markers', text=hexbin_text,
+            marker=dict(
+                size=fourth_quarter_shot_freq, sizemode='area', sizeref=2. * max(fourth_quarter_shot_freq, default=0) / (11. ** 2), sizemin=2.5,
+                line=dict(width=1, color='#333333'), symbol='hexagon',
+                color=fourth_quarter_player_shot_accur, colorscale=colorscale,
+                colorbar=dict(
+                    thickness=15,
+                    x=0.75,
+                    y=0.87,
+                    yanchor='middle',
+                    len=0.2,
+                    title=dict(
+                        text="<B>Accuracy</B>",
+                        font=dict(
+                            size=11,
+                            color='#4d4d4d'
+                        ),
+                    ),
+                    tickvals=[marker_cmin,
+                            (marker_cmin + marker_cmax) / 2, marker_cmax],
+                    ticktext=ticktexts,
+                    tickfont=dict(
                         size=11,
                         color='#4d4d4d'
-                    ),
+                    )
                 ),
-                tickvals=[marker_cmin,
-                          (marker_cmin + marker_cmax) / 2, marker_cmax],
-                ticktext=ticktexts,
-                tickfont=dict(
-                    size=11,
-                    color='#4d4d4d'
-                )
+                cmin=marker_cmin, cmax=marker_cmax,
             ),
-            cmin=marker_cmin, cmax=marker_cmax,
-        ),
-        hoverinfo='text'
-    ))
+            hoverinfo='text'
+        ))
 
     shot_distance_pct_fig = px.line(
         player_distance_averages_df, x="SHOT_DISTANCE", y="PLAYER_FG_PCT")
@@ -1374,53 +1370,10 @@ def update_statsgraph_figure(player_selected, year_selected_key, year_marks, sho
                  }),
 
         html.Div([
-            dcc.Graph(figure=season_player_shot_chart),
+            dcc.Graph(figure=player_shot_chart),
         ]
         ),
-        html.Div(children='''
-                                Player Shot Chart 1st Quarter Data
-                               ''',
-                 style={
-                     'textAlign': 'center'
-                 }),
 
-        html.Div([
-            dcc.Graph(figure=first_quarter_player_shot_chart),
-        ]
-        ),
-        html.Div(children='''
-                                Player Shot Chart 2nd Quarter Data
-                               ''',
-                 style={
-                     'textAlign': 'center'
-                 }),
-
-        html.Div([
-            dcc.Graph(figure=second_quarter_player_shot_chart),
-        ]
-        ),
-        html.Div(children='''
-                                Player Shot Chart 3rd Quarter Data
-                               ''',
-                 style={
-                     'textAlign': 'center'
-                 }),
-
-        html.Div([
-            dcc.Graph(figure=third_quarter_player_shot_chart),
-        ]
-        ),
-        html.Div(children='''
-                                Player Shot Chart 4th Quarter Data
-                               ''',
-                 style={
-                     'textAlign': 'center'
-                 }),
-
-        html.Div([
-            dcc.Graph(figure=fourth_quarter_player_shot_chart),
-        ]
-        ),
         html.Div(children='''
                                 Player Shot Distance Data
                                ''',
@@ -1433,6 +1386,7 @@ def update_statsgraph_figure(player_selected, year_selected_key, year_marks, sho
         ]
         ),
     ]
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
