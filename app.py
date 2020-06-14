@@ -13,9 +13,13 @@ import plotly.express as px
 import pandas as pd
 import numpy as np
 import time
-
+from mongoengine import connect
+from database import Player
 
 # ==================================== SandBox Area ==================================================== #
+# Create to Mongodb if database does not exist or connect to database if it exists
+connect("nba-api-static-lists")
+
 nba_teams = teams.get_teams()  # nba_teams is a list of dictionaries
 # print('First NBA team data example.')
 # print(nba_teams[0])
@@ -55,6 +59,7 @@ list_of_applicable_seasons = ['1996-97', '1997-98', '1998-99', '1999-00', '2000-
 
 # Compile list of players who played anytime between the seasons 1996-97 - 2018-19
 nba_players = []
+
 for player in players_nba[:5]:
     player_id = player['id']
     time.sleep(1)
@@ -67,6 +72,8 @@ for player in players_nba[:5]:
         item in list_of_seasons for item in list_of_applicable_seasons)
     if player_in_relevant_time_frame == True:
         nba_players.append(player)
+        print(player)
+        print(type(player))
 
 # Shot Chart Detail
 # league_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FG_PCT', team_id=0, player_id=0, season_nullable='1997-98', season_type_all_star='Regular Season')
@@ -667,7 +674,18 @@ def set_people_dropdown_options(group):
         nba_player_list = []
         for player in nba_players:
             nba_player_list.append(player['full_name'])
-        return [{'label': i, 'value': i} for i in nba_player_list]
+            print('Player without DB')
+            print(type(player))
+            print(player)
+
+        nba_player_list_test = []
+        nba_players_test = Player.objects
+        for player_test in nba_players_test:
+            nba_player_list_test.append(player_test.full_name)
+            print('Player with DB')
+            print(type(player_test.to_mongo().to_dict()))
+            print(player_test.to_mongo().to_dict())
+        return [{'label': i, 'value': i} for i in nba_player_list_test]
 
 
 # ======================================================================================================= #

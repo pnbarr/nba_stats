@@ -10,20 +10,8 @@ connect("nba-api-static-lists")
 # Defining Documents
 
 class Player(Document):
-    player_id = IntField(unique=True, required=True)
-    full_name = StringField(unique=True, required=True)
-    first_name = StringField(unique=True, required=True)
-    last_name = StringField(unique=True, required=True)
-    is_active = BooleanField(unique=True, required=True)
-
-# Save a document
-
-player1 = Player(
-    player_id=2544,
-    full_name='LeBron James',
-    first_name='LeBron',
-    last_name='James',
-    is_active=True
-).save()
-
-print('Done')
+    player_id = IntField(required=True)
+    full_name = StringField(required=True)
+    first_name = StringField(required=True)
+    last_name = StringField(required=True)
+    is_active = BooleanField(required=True)
