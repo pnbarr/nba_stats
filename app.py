@@ -58,22 +58,22 @@ list_of_applicable_seasons = ['1996-97', '1997-98', '1998-99', '1999-00', '2000-
                               '2014-15', '2015-16', '2016-17', '2017-18', '2018-19']
 
 # Compile list of players who played anytime between the seasons 1996-97 - 2018-19
-nba_players = []
+# nba_players = []
 
-for player in players_nba[:5]:
-    player_id = player['id']
-    time.sleep(1)
-    player_career_stats = playercareerstats.PlayerCareerStats(
-        player_id=player_id)
-    time.sleep(1)
-    player_career_stats_df = player_career_stats.get_data_frames()[0]
-    list_of_seasons = player_career_stats_df['SEASON_ID'].values.tolist()
-    player_in_relevant_time_frame = any(
-        item in list_of_seasons for item in list_of_applicable_seasons)
-    if player_in_relevant_time_frame == True:
-        nba_players.append(player)
-        print(player)
-        print(type(player))
+# for player in players_nba[:5]:
+#     player_id = player['id']
+#     time.sleep(1)
+#     player_career_stats = playercareerstats.PlayerCareerStats(
+#         player_id=player_id)
+#     time.sleep(1)
+#     player_career_stats_df = player_career_stats.get_data_frames()[0]
+#     list_of_seasons = player_career_stats_df['SEASON_ID'].values.tolist()
+#     player_in_relevant_time_frame = any(
+#         item in list_of_seasons for item in list_of_applicable_seasons)
+#     if player_in_relevant_time_frame == True:
+#         nba_players.append(player)
+#         print(player)
+#         print(type(player))
 
 # Shot Chart Detail
 # league_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FG_PCT', team_id=0, player_id=0, season_nullable='1997-98', season_type_all_star='Regular Season')
@@ -671,20 +671,10 @@ def set_people_dropdown_options(group):
             nba_team_list.append(team['full_name'])
         return [{'label': i, 'value': i} for i in nba_team_list]
     else:
-        nba_player_list = []
-        for player in nba_players:
-            nba_player_list.append(player['full_name'])
-            print('Player without DB')
-            print(type(player))
-            print(player)
-
         nba_player_list_test = []
         nba_players_test = Player.objects
         for player_test in nba_players_test:
             nba_player_list_test.append(player_test.full_name)
-            print('Player with DB')
-            print(type(player_test.to_mongo().to_dict()))
-            print(player_test.to_mongo().to_dict())
         return [{'label': i, 'value': i} for i in nba_player_list_test]
 
 
@@ -732,9 +722,9 @@ def render_tab_content(tab_switch):
      Output('player-store', 'data')],
     [Input('player-dropdown', 'value'), ])
 def set_player_year_marks(player_selected):
-    player_info = [player for player in nba_players
-                   if player['full_name'] == player_selected][0]
-    player_id = player_info['id']
+    player_info_test = ([player for player in Player.objects
+                   if player.full_name == player_selected][0]).to_mongo().to_dict()
+    player_id = player_info_test['player_id']
     player_career_data = playercareerstats.PlayerCareerStats(
         player_id=player_id)
     player_career_df = player_career_data.get_data_frames()[0]
@@ -1025,9 +1015,9 @@ def update_team_tab(team_selected, year_selected_key, year_marks):
      Input('shotfilter-radio', 'value')])
 def update_statsgraph_figure(player_selected, year_selected_key, year_marks, shot_filter):
     selected_year = year_marks[str(year_selected_key)]
-    player_info = [player for player in nba_players
-                   if player['full_name'] == player_selected][0]
-    player_id = player_info['id']
+    player_info = ([player for player in Player.objects
+                   if player.full_name == player_selected][0]).to_mongo().to_dict()
+    player_id = player_info['player_id']
     player_career_data = playercareerstats.PlayerCareerStats(
         player_id=player_id)
     player_career_df = player_career_data.get_data_frames()[0]
