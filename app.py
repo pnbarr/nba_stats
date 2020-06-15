@@ -14,7 +14,7 @@ import pandas as pd
 import numpy as np
 import time
 from mongoengine import connect
-from database import Player
+from database import Player, Team
 
 # ==================================== SandBox Area ==================================================== #
 # Create to Mongodb if database does not exist or connect to database if it exists
@@ -667,15 +667,15 @@ def generate_player_shotchart_averages(player_id, season):
 def set_people_dropdown_options(group):
     if group == 'Team':
         nba_team_list = []
-        for team in nba_teams:
-            nba_team_list.append(team['full_name'])
+        for team in Team.objects:
+            nba_team_list.append(team.full_name)
         return [{'label': i, 'value': i} for i in nba_team_list]
     else:
-        nba_player_list_test = []
-        nba_players_test = Player.objects
-        for player_test in nba_players_test:
-            nba_player_list_test.append(player_test.full_name)
-        return [{'label': i, 'value': i} for i in nba_player_list_test]
+        nba_player_list = []
+        nba_players = Player.objects
+        for player in nba_players:
+            nba_player_list.append(player.full_name)
+        return [{'label': i, 'value': i} for i in nba_player_list]
 
 
 # ======================================================================================================= #
@@ -767,9 +767,9 @@ def update_team_tab(team_selected, year_selected_key, year_marks):
                          21: '2017-18',
                          22: '2018-19', }
     selected_year = year_selected_map[year_selected_key]
-    team_info = [team for team in nba_teams
-                 if team['full_name'] == team_selected][0]
-    team_id = team_info['id']
+    team_info = ([team for team in Team.objects
+                 if team.full_name == team_selected][0]).to_mongo().to_dict()
+    team_id = team_info['team_id']
 
     # Scatter plot data for team shot chart data
     team_zone_averages_df = generate_team_shotchart_averages(
