@@ -15,3 +15,13 @@ class Player(Document):
     first_name = StringField(required=True)
     last_name = StringField(required=True)
     is_active = BooleanField(required=True)
+
+class Team(Document):
+    team_id = IntField(required=True)
+    full_name = StringField(required=True)
+    abbreviation = StringField(required=True)
+    nickname = StringField(required=True)
+    city = StringField(required=True)
+    state = StringField(required=True)
+    year_founded = IntField(required=True)
+    

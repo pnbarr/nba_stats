@@ -1,4 +1,4 @@
-from nba_api.stats.static import players, teams
+from nba_api.stats.static import players
 from nba_api.stats.endpoints import playercareerstats
 from mongoengine import connect
 from database import Player
