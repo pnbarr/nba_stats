@@ -1,7 +1,7 @@
 from nba_api.stats.static import players
 from nba_api.stats.endpoints import playercareerstats
 from mongoengine import connect
-from database import Player
+from database_schema import Players
 import time
 
 list_of_applicable_seasons = ['1996-97', '1997-98', '1998-99', '1999-00', '2000-01', '2001-02', '2002-03', '2003-04', '2004-05',
@@ -9,7 +9,7 @@ list_of_applicable_seasons = ['1996-97', '1997-98', '1998-99', '1999-00', '2000-
                               '2014-15', '2015-16', '2016-17', '2017-18', '2018-19']
 players_nba = players.get_players()
 # Create to Mongodb if database does not exist or connect to database if it exists
-connect("nba-api-static-lists")
+connect("nbaDashboardDB")
 for player in players_nba[:10]:
     player_id = player['id']
     time.sleep(0.5)
@@ -19,7 +19,7 @@ for player in players_nba[:10]:
     player_in_relevant_time_frame = any(
         item in list_of_seasons for item in list_of_applicable_seasons)
     if player_in_relevant_time_frame == True:
-        add_player_to_db = Player(
+        add_player_to_db = Players(
             player_id=player['id'],
             full_name=player['full_name'],
             first_name=player['first_name'],
