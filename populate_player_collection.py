@@ -10,7 +10,7 @@ list_of_applicable_seasons = ['1996-97', '1997-98', '1998-99', '1999-00', '2000-
 players_nba = players.get_players()
 # Create to Mongodb if database does not exist or connect to database if it exists
 connect("nbaDashboardDB")
-for player in players_nba[:10]:
+for player in players_nba:
     player_id = player['id']
     time.sleep(0.5)
     player_career_stats = playercareerstats.PlayerCareerStats(player_id=player_id)
@@ -26,4 +26,5 @@ for player in players_nba[:10]:
             last_name=player['last_name'],
             is_active=player['is_active']
         ).save()
+        print('Added {} to players database collection'.format(player['full_name']))
 print('Done adding players to database collection.')

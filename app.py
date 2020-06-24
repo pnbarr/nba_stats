@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 import dash
-import matplotlib
 import dash_core_components as dcc
 import dash_html_components as html
+from dash.exceptions import PreventUpdate
 from dash.dependencies import Input, Output, State
-from nba_api.stats.static import players, teams
-from nba_api.stats.endpoints import commonallplayers, leaguegamefinder, commonplayerinfo, playercareerstats, teamyearbyyearstats, shotchartdetail
-from nba_api.stats.endpoints import shotchartlineupdetail
+#from nba_api.stats.static import players, teams
+from nba_api.stats.endpoints import playercareerstats, teamyearbyyearstats, shotchartdetail
 from nba_api.stats.library.parameters import Season
 import plotly.graph_objects as go
 import plotly.express as px
@@ -20,69 +19,10 @@ from database_schema import Players, Teams
 # Create to Mongodb if database does not exist or connect to database if it exists
 connect("nbaDashboardDB")
 
-nba_teams = teams.get_teams()  # nba_teams is a list of dictionaries
-# print('First NBA team data example.')
-# print(nba_teams[0])
-# KEYS
-# 'id'
-# 'full_name'
-# 'abbreviation'
-# 'nickname'
-# 'city'
-# 'state'
-# 'year_founded'
-
-players_nba = players.get_players()  # nba_players is a list of dictionaries
-# print('Frist NBA player data example.')
-# print(nba_players[0])
-# KEYS
-# 'id'
-# 'full_name'
-# 'first_name'
-# 'last_name'
-# 'is_active'
-
-# team_example = teamyearbyyearstats.TeamYearByYearStats(
-#     team_id=nba_teams[0]['id'])
-# team_example_df = team_example.get_data_frames()[0]
-# team_example_year_df = team_example_df.loc[(team_example_df['YEAR'] == '2018-19')]
-# print(team_example_year_df)
-
-# Function should take a year season as an input and return list of players who played that year
-# player_example = playercareerstats.PlayerCareerStats(player_id='2544')
-# player_example = playercareerstats.PlayerCareerStats(player_id='76001')
-# player_example_df = player_example.get_data_frames()[0]
-# list_of_seasons = player_example_df['SEASON_ID'].values.tolist()
 list_of_applicable_seasons = ['1996-97', '1997-98', '1998-99', '1999-00', '2000-01', '2001-02', '2002-03', '2003-04', '2004-05',
                               '2005-06', '2006-07', '2007-08', '2008-09', '2009-10', '2010-11', '2011-12', '2012-13', '2013-14',
                               '2014-15', '2015-16', '2016-17', '2017-18', '2018-19']
 
-# Compile list of players who played anytime between the seasons 1996-97 - 2018-19
-# nba_players = []
-
-# for player in players_nba[:5]:
-#     player_id = player['id']
-#     time.sleep(1)
-#     player_career_stats = playercareerstats.PlayerCareerStats(
-#         player_id=player_id)
-#     time.sleep(1)
-#     player_career_stats_df = player_career_stats.get_data_frames()[0]
-#     list_of_seasons = player_career_stats_df['SEASON_ID'].values.tolist()
-#     player_in_relevant_time_frame = any(
-#         item in list_of_seasons for item in list_of_applicable_seasons)
-#     if player_in_relevant_time_frame == True:
-#         nba_players.append(player)
-#         print(player)
-#         print(type(player))
-
-# Shot Chart Detail
-# league_shot_data = shotchartdetail.ShotChartDetail(context_measure_simple = 'FG_PCT', team_id=0, player_id=0, season_nullable='1997-98', season_type_all_star='Regular Season')
-# league_shot_df = league_shot_data.get_data_frames()[1]
-# print('2013-14 League Shooting Averages')
-# print(league_shot_df)
-# data_columns = ['SHOT_TYPE','SHOT_ZONE_AREA','SHOT_ZONE_RANGE','SHOT_DISTANCE','LOC_X','LOC_Y','SHOT_ATTEMPTED_FLAG','SHOT_MADE_FLAG']
-# filtered_player_shot_df = player_shot_df[data_columns]
-# print(filtered_player_shot_df)
 # ======================================================================================================= #
 
 def build_tabs():
@@ -882,6 +822,8 @@ def update_team_tab(team_selected, year_selected_key, year_marks):
      Input('player-year-slider', 'marks'),
      Input('shotfilter-radio', 'value')])
 def update_statsgraph_figure(player_selected, year_selected_key, year_marks, shot_filter):
+    if player_selected is None:
+        raise PreventUpdate
     selected_year = year_marks[str(year_selected_key)]
     player_id = Players.objects(full_name=player_selected).first().player_id
     player_career_data = playercareerstats.PlayerCareerStats(
@@ -986,10 +928,7 @@ def update_statsgraph_figure(player_selected, year_selected_key, year_marks, sho
         player_distance_averages_df, x="SHOT_DISTANCE", y="PLAYER_FG_PCT")
 
     return [
-        html.Div(children='''
-                                Player Shot Chart Data for the
-                               '''
-                 + season + ' Season',
+        html.Div(children=player_selected + ' ' + season + ' Season',
                  style={
                      'textAlign': 'center'
                  }),
