@@ -647,6 +647,79 @@ def update_team_tab(team_selected, year_selected_key, year_marks):
         hoverinfo='text'
     ))
 
+    # ************************ TESTING NEW PLOTS FOR SHOOTING TRENDS OVER 82 GAMES START ************************
+    # ************************************* POINT TOTALS PER GAME SECTION ***************************************
+    points_per_game_line_plot = go.Figure()
+    games_list_x = list(range(1, 83))
+    # Add points per game data to plot
+    # points_per_game_y = current_team_shot_data_object.points_per_game
+    # points_per_game_line_plot.add_trace(go.Scatter(x=games_list_x, y=points_per_game_y,
+    #                 mode='lines',
+    #                 name='Total Points Per Game'))
+    # Add 3 point total points per game data to plot
+    three_point_points_total_per_game_y = current_team_shot_data_object.three_point_points_total_per_game
+    points_per_game_line_plot.add_trace(go.Scatter(x=games_list_x, y=three_point_points_total_per_game_y,
+                    mode='lines',
+                    name='Points from 3-pointers Per Game'))
+    # Add 2 point total points per game data to plot
+    two_point_points_total_per_game_y = current_team_shot_data_object.two_point_points_total_per_game
+    points_per_game_line_plot.add_trace(go.Scatter(x=games_list_x, y=two_point_points_total_per_game_y,
+                    mode='lines',
+                    name='Points from 2-pointers Per Game'))
+    # Add Free Throw total points per game data to plot
+    ft_points_total_per_game_y = current_team_shot_data_object.ft_points_total_per_game
+    points_per_game_line_plot.add_trace(go.Scatter(x=games_list_x, y=ft_points_total_per_game_y,
+                    mode='lines',
+                    name='Points from Free Throws Per Game'))
+    # Update layout
+    points_per_game_line_plot.update_layout(title='Points Scored Per Game',
+                   xaxis_title='Games',
+                   yaxis_title='Number of Points')
+    # ************************************* SHOOTING PERCENTAGES PER GAME SECTION ******************************
+    shooting_percentages_per_game_line_plot = go.Figure()
+    # Add 3 point FG% per game data to plot
+    three_point_FG_PCT_per_game_y = current_team_shot_data_object.three_point_FG_PCT_per_game
+    shooting_percentages_per_game_line_plot.add_trace(go.Scatter(x=games_list_x, y=three_point_FG_PCT_per_game_y,
+                    mode='lines',
+                    name='3-pt FG% Per Game'))
+    # Add 2 point FG% per game data to plot
+    two_point_FG_PCT_per_game_y = current_team_shot_data_object.two_point_FG_PCT_per_game
+    shooting_percentages_per_game_line_plot.add_trace(go.Scatter(x=games_list_x, y=two_point_FG_PCT_per_game_y,
+                    mode='lines',
+                    name='2-pt FG% Per Game'))
+    # Add Free Throw FG% per game data to plot
+    avg_pts_per_ft_per_game_y = current_team_shot_data_object.avg_pts_per_ft_per_game
+    shooting_percentages_per_game_line_plot.add_trace(go.Scatter(x=games_list_x, y=avg_pts_per_ft_per_game_y,
+                    mode='lines',
+                    name='FT% Per Game'))
+    # Update layout
+    shooting_percentages_per_game_line_plot.update_layout(title='Shooting Percentages Per Game',
+                   xaxis_title='Games',
+                   yaxis_title='Shooting Percentage')
+    # ************************************* AVERAGE POINTS PER SHOT ATTEMPT PER GAME SECTION ******************************
+    avg_pts_per_shot_per_game_line_plot = go.Figure()
+    # Add 3 point avg points per shot per game data to plot
+    avg_pts_per_three_point_FGA_per_game_y = current_team_shot_data_object.avg_pts_per_three_point_FGA_per_game
+    avg_pts_per_shot_per_game_line_plot.add_trace(go.Scatter(x=games_list_x, y=avg_pts_per_three_point_FGA_per_game_y,
+                    mode='lines',
+                    name='Average Points per 3-pt FGA'))
+    # Add 2 point avg points per shot per game data to plot
+    avg_pts_per_two_point_FGA_per_game_y = current_team_shot_data_object.avg_pts_per_two_point_FGA_per_game
+    avg_pts_per_shot_per_game_line_plot.add_trace(go.Scatter(x=games_list_x, y=avg_pts_per_two_point_FGA_per_game_y,
+                    mode='lines',
+                    name='Average Points per 2-pt FGA'))
+    # Add Free Throw FG% per game data to plot
+    avg_pts_per_ft_per_game_y = current_team_shot_data_object.avg_pts_per_ft_per_game
+    avg_pts_per_shot_per_game_line_plot.add_trace(go.Scatter(x=games_list_x, y=avg_pts_per_ft_per_game_y,
+                    mode='lines',
+                    name='Average Points per Free Throw Attempt'))
+    # Update layout
+    avg_pts_per_shot_per_game_line_plot.update_layout(title='Average Points Per Shot Attempt Per Game',
+                   xaxis_title='Games',
+                   yaxis_title='Average Points')
+
+    # ************************ TESTING NEW PLOTS FOR SHOOTING TRENDS OVER 82 GAMES END **************************
+
     team_example = teamyearbyyearstats.TeamYearByYearStats(team_id=team_id)
     team_example_df = team_example.get_data_frames()[0]
     team_example_year_df = team_example_df.loc[(
@@ -720,98 +793,129 @@ def update_team_tab(team_selected, year_selected_key, year_marks):
                      id="info-container",
                      className="row container-display",
                      ),
-                html.Div(
-                    [
-                        html.Div(
-                            [html.H6(id="total_fga", children=fga),
-                             html.P("Total FGA")],
-                            id="total_fga",
-                            className="mini_container",
-                        ),
-                        html.Div(
-                            [html.H6(id="total_FG2_fga", children=fg2a), html.P(
-                                "Total 2PT FGA")],
-                            id="total_FG2_fga",
-                            className="mini_container",
-                        ),
-                        html.Div(
-                            [html.H6(id="total_FG3_fga", children=fg3a), html.P(
-                                "Total 3PT FGA")],
-                            id="total_FG3_fga",
-                            className="mini_container",
-                        ),
-                        html.Div(
-                            [html.H6(id="total_FTA", children=fta),
-                             html.P("Total FTA")],
-                            id="total_FTA",
-                            className="mini_container",
-                        ),
-                    ],
-                    id="info-container",
-                    className="row container-display",
-                ),
-                html.Div(
-                    [
-                        html.Div(
-                            [html.H6(id="total_points", children=total_points), html.P(
-                                "Total Points")],
-                            id="total_points",
-                            className="mini_container",
-                        ),
-                        html.Div(
-                            [html.H6(id="total_FG2_points", children=total_FG2_points), html.P(
-                                "Total Points from 2PT FG")],
-                            id="total_FG2_points",
-                            className="mini_container",
-                        ),
-                        html.Div(
-                            [html.H6(id="total_FG3_points", children=total_FG3_points), html.P(
-                                "Total Points from 3PT FG")],
-                            id="total_FG3_points",
-                            className="mini_container",
-                        ),
-                        html.Div(
-                            [html.H6(id="total_FT_points", children=total_FT_points), html.P(
-                                "Total Points from FT")],
-                            id="total_FT_points",
-                            className="mini_container",
-                        ),
-                    ],
-                    id="info-container",
-                    className="row container-display",
-                ),
-                html.Div(
-                    [
-                        html.Div(
-                            [html.H6(id="fg", children=fg_perc),
-                             html.P("FG%")],
-                            id="fg",
-                            className="mini_container",
-                        ),
-                        html.Div(
-                            [html.H6(id="fg2", children=fg2_perc),
-                             html.P("2-PT FG%")],
-                            id="fg2",
-                            className="mini_container",
-                        ),
-                        html.Div(
-                            [html.H6(id="fg3", children=fg3_perc),
-                             html.P("3-PT FG%")],
-                            id="fg3",
-                            className="mini_container",
-                        ),
-                        html.Div(
-                            [html.H6(id="ftp", children=ft_perc),
-                             html.P("FT%")],
-                            id="ftp",
-                            className="mini_container",
-                        ),
-                    ],
-                    id="info-container",
-                    className="row container-display",
-                ),
+                # html.Div(
+                #     [
+                #         dcc.Graph(figure=points_per_game_line_plot)
+                #     ],
+                #     id="info-container",
+                #     className="row container-display",
+                # ),
+                # html.Div(
+                #     [
+                #         dcc.Graph(figure=shooting_percentages_per_game_line_plot)
+                #     ],
+                #     id="info-container",
+                #     className="row container-display",
+                # ),
+                # *****************************************************************
+                # html.Div(
+                #     [
+                #         html.Div(
+                #             [html.H6(id="total_fga", children=fga),
+                #              html.P("Total FGA")],
+                #             id="total_fga",
+                #             className="mini_container",
+                #         ),
+                #         html.Div(
+                #             [html.H6(id="total_FG2_fga", children=fg2a), html.P(
+                #                 "Total 2PT FGA")],
+                #             id="total_FG2_fga",
+                #             className="mini_container",
+                #         ),
+                #         html.Div(
+                #             [html.H6(id="total_FG3_fga", children=fg3a), html.P(
+                #                 "Total 3PT FGA")],
+                #             id="total_FG3_fga",
+                #             className="mini_container",
+                #         ),
+                #         html.Div(
+                #             [html.H6(id="total_FTA", children=fta),
+                #              html.P("Total FTA")],
+                #             id="total_FTA",
+                #             className="mini_container",
+                #         ),
+                #     ],
+                #     id="info-container",
+                #     className="row container-display",
+                # ),
+                # html.Div(
+                #     [
+                #         html.Div(
+                #             [html.H6(id="total_points", children=total_points), html.P(
+                #                 "Total Points")],
+                #             id="total_points",
+                #             className="mini_container",
+                #         ),
+                #         html.Div(
+                #             [html.H6(id="total_FG2_points", children=total_FG2_points), html.P(
+                #                 "Total Points from 2PT FG")],
+                #             id="total_FG2_points",
+                #             className="mini_container",
+                #         ),
+                #         html.Div(
+                #             [html.H6(id="total_FG3_points", children=total_FG3_points), html.P(
+                #                 "Total Points from 3PT FG")],
+                #             id="total_FG3_points",
+                #             className="mini_container",
+                #         ),
+                #         html.Div(
+                #             [html.H6(id="total_FT_points", children=total_FT_points), html.P(
+                #                 "Total Points from FT")],
+                #             id="total_FT_points",
+                #             className="mini_container",
+                #         ),
+                #     ],
+                #     id="info-container",
+                #     className="row container-display",
+                # ),
+                # html.Div(
+                #     [
+                #         html.Div(
+                #             [html.H6(id="fg", children=fg_perc),
+                #              html.P("FG%")],
+                #             id="fg",
+                #             className="mini_container",
+                #         ),
+                #         html.Div(
+                #             [html.H6(id="fg2", children=fg2_perc),
+                #              html.P("2-PT FG%")],
+                #             id="fg2",
+                #             className="mini_container",
+                #         ),
+                #         html.Div(
+                #             [html.H6(id="fg3", children=fg3_perc),
+                #              html.P("3-PT FG%")],
+                #             id="fg3",
+                #             className="mini_container",
+                #         ),
+                #         html.Div(
+                #             [html.H6(id="ftp", children=ft_perc),
+                #              html.P("FT%")],
+                #             id="ftp",
+                #             className="mini_container",
+                #         ),
+                #     ],
+                #     id="info-container",
+                #     className="row container-display",
+                # ),
+                # ********************************************************************
             ], className="six columns"),
-        ], className="row")
+        ], className="row"),
+        html.Div(
+                    [
+                        dcc.Graph(figure=points_per_game_line_plot)
+                    ],
+                ),
+        html.Div(
+                    [
+                        dcc.Graph(figure=shooting_percentages_per_game_line_plot)
+                    ],
+                ),
+        html.Div(
+                    [
+                        dcc.Graph(figure=avg_pts_per_shot_per_game_line_plot)
+                    ],
+                ),
     ]
 
 # Callback updates player tab content based on player selected

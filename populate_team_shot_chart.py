@@ -154,40 +154,48 @@ def generate_team_shotchart_averages(team_id, season):
 
     return shot_zone_averages_df, team_shot_chart_df
 
-# Iterate through all teams in NBA
-for team in Teams.objects:
-    team_selected = team.full_name
-    team_id = team.team_id
-    # List of current team shot data objects by year
-    team_shot_data_list = []
-    print("Processing {0} data . . . ".format(team_selected))
-    # Iterate through all applicable years for plotting shot chart data
-    for year_index in range(0, 23):
-        selected_year = year_selected_map[year_index]
-        team_zone_averages_df, team_shot_df = generate_team_shotchart_averages(
-            team_id, selected_year)
-        filtered_team_shot_df = team_shot_df[data_columns]
-        season_merged_df = pd.merge(filtered_team_shot_df, team_zone_averages_df, how="inner", on=[
-            "SHOT_ZONE_BASIC", "SHOT_ZONE_AREA", "SHOT_ZONE_RANGE"])
-        season_xlocs = season_merged_df["LOC_X"].tolist()
-        season_ylocs = season_merged_df["LOC_Y"].tolist()
-        season_shot_freq = season_merged_df["FREQ"].tolist()
-        season_rel_shot_accur = season_merged_df["RELATIVE_FG_PCT"].tolist(
-        )
-        season_league_shot_accur = season_merged_df["LEAGUE_FG_PCT"].tolist(
-        )
-        season_team_shot_accur = season_merged_df["TEAM_FG_PCT"].tolist()
-        current_team_shot_data_object = TeamShotDataSets(
-            year=selected_year,
-            xlocs=season_xlocs,
-            ylocs=season_ylocs,
-            shot_freq=season_shot_freq,
-            rel_shot_accur=season_rel_shot_accur,
-            league_shot_accur=season_league_shot_accur,
-            team_shot_accur=season_team_shot_accur
-        )
-        team_shot_data_list.append(current_team_shot_data_object)
-    team.shot_data = team_shot_data_list
-    print("Saving {0} shot data to database . . .".format(team_selected))
-    team.save()
-    print("Finished saving {} shot data to database!".format(team_selected))
+# Populate team shot chart data
+def populate_team_shot_data():
+    # Iterate through all teams in NBA
+    for team in Teams.objects:
+        team_selected = team.full_name
+        team_id = team.team_id
+        # List of current team shot data objects by year
+        team_shot_data_list = []
+        print("Processing {0} data . . . ".format(team_selected))
+        # Iterate through all applicable years for plotting shot chart data
+        for year_index in range(0, 23):
+            selected_year = year_selected_map[year_index]
+            team_zone_averages_df, team_shot_df = generate_team_shotchart_averages(
+                team_id, selected_year)
+            filtered_team_shot_df = team_shot_df[data_columns]
+            season_merged_df = pd.merge(filtered_team_shot_df, team_zone_averages_df, how="inner", on=[
+                "SHOT_ZONE_BASIC", "SHOT_ZONE_AREA", "SHOT_ZONE_RANGE"])
+            season_xlocs = season_merged_df["LOC_X"].tolist()
+            season_ylocs = season_merged_df["LOC_Y"].tolist()
+            season_shot_freq = season_merged_df["FREQ"].tolist()
+            season_rel_shot_accur = season_merged_df["RELATIVE_FG_PCT"].tolist(
+            )
+            season_league_shot_accur = season_merged_df["LEAGUE_FG_PCT"].tolist(
+            )
+            season_team_shot_accur = season_merged_df["TEAM_FG_PCT"].tolist()
+            current_team_shot_data_object = TeamShotDataSets(
+                year=selected_year,
+                xlocs=season_xlocs,
+                ylocs=season_ylocs,
+                shot_freq=season_shot_freq,
+                rel_shot_accur=season_rel_shot_accur,
+                league_shot_accur=season_league_shot_accur,
+                team_shot_accur=season_team_shot_accur
+            )
+            team_shot_data_list.append(current_team_shot_data_object)
+        team.shot_data = team_shot_data_list
+        print("Saving {0} shot data to database . . .".format(team_selected))
+        team.save()
+        print("Finished saving {} shot data to database!".format(team_selected))
+
+def main():
+    populate_team_shot_data()
+
+if __name__ == "__main__":
+    main()
