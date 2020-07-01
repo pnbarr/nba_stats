@@ -717,6 +717,28 @@ def update_team_tab(team_selected, year_selected_key, year_marks):
     avg_pts_per_shot_per_game_line_plot.update_layout(title='Average Points Per Shot Attempt Per Game',
                    xaxis_title='Games',
                    yaxis_title='Average Points')
+    
+    # ************************************* SHOT ATTEMPTS PER GAME SECTION ***************************************
+    shot_attempts_per_game_line_plot = go.Figure()
+    # Add 3 point FGA per game data to plot
+    three_point_FGA_per_game_y = current_team_shot_data_object.three_point_FGA_per_game
+    shot_attempts_per_game_line_plot.add_trace(go.Scatter(x=games_list_x, y=three_point_FGA_per_game_y,
+                    mode='lines',
+                    name='3-pt FGA'))
+    # Add 2 point FGA per game data to plot
+    two_point_FGA_per_game_y = current_team_shot_data_object.two_point_FGA_per_game
+    shot_attempts_per_game_line_plot.add_trace(go.Scatter(x=games_list_x, y=two_point_FGA_per_game_y,
+                    mode='lines',
+                    name='2-pt FGA'))
+    # Add FTA per game data to plot
+    fta_per_game_y = current_team_shot_data_object.fta_per_game
+    shot_attempts_per_game_line_plot.add_trace(go.Scatter(x=games_list_x, y=fta_per_game_y,
+                    mode='lines',
+                    name='Free Throw Attempts'))
+    # Update layout
+    shot_attempts_per_game_line_plot.update_layout(title='Shot Attempts Per Game',
+                   xaxis_title='Games',
+                   yaxis_title='Number of Attempts')
 
     # ************************ TESTING NEW PLOTS FOR SHOOTING TRENDS OVER 82 GAMES END **************************
 
@@ -914,6 +936,11 @@ def update_team_tab(team_selected, year_selected_key, year_marks):
         html.Div(
                     [
                         dcc.Graph(figure=avg_pts_per_shot_per_game_line_plot)
+                    ],
+                ),
+        html.Div(
+                    [
+                        dcc.Graph(figure=shot_attempts_per_game_line_plot)
                     ],
                 ),
     ]
